@@ -13,6 +13,7 @@ const BottomNav: React.FC = () => {
     { path: '/groups', icon: 'group', label: 'Группы' },
     { path: '/events', icon: 'event', label: 'События' },
     { path: '/live', icon: 'videocam', label: 'Live' },
+    { path: '/subscription', icon: 'star', label: 'Pro' },
     { path: config.routes.profile, icon: 'person', label: 'Профиль' },
   ];
 

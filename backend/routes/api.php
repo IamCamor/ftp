@@ -24,6 +24,8 @@ use App\Http\Controllers\Api\V1\Admin\UserManagementController;
 use App\Http\Controllers\Api\V1\Admin\CatchManagementController;
 use App\Http\Controllers\Api\V1\Admin\PointManagementController;
 use App\Http\Controllers\Api\V1\Admin\ReportManagementController;
+use App\Http\Controllers\Api\V1\SubscriptionController;
+use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\WebhookController;
 
 Route::prefix('v1')->group(function () {
@@ -128,6 +130,27 @@ Route::prefix('v1')->group(function () {
     Route::post('/reports/{report}/review', [ReportManagementController::class, 'review']);
     Route::post('/reports/bulk-review', [ReportManagementController::class, 'bulkReview']);
     Route::get('/reports/statistics', [ReportManagementController::class, 'statistics']);
+  });
+
+  // Subscription routes
+  Route::middleware('auth:api')->group(function () {
+    Route::get('/subscriptions/plans', [SubscriptionController::class, 'plans']);
+    Route::get('/subscriptions/status', [SubscriptionController::class, 'status']);
+    Route::get('/subscriptions', [SubscriptionController::class, 'index']);
+    Route::post('/subscriptions', [SubscriptionController::class, 'store']);
+    Route::get('/subscriptions/{subscription}', [SubscriptionController::class, 'show']);
+    Route::post('/subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel']);
+    Route::post('/subscriptions/{subscription}/extend', [SubscriptionController::class, 'extend']);
+  });
+
+  // Payment routes
+  Route::middleware('auth:api')->group(function () {
+    Route::get('/payments/methods', [PaymentController::class, 'methods']);
+    Route::get('/payments', [PaymentController::class, 'index']);
+    Route::get('/payments/{payment}', [PaymentController::class, 'show']);
+    Route::post('/payments/process', [PaymentController::class, 'process']);
+    Route::post('/payments/{payment}/cancel', [PaymentController::class, 'cancel']);
+    Route::post('/payments/{payment}/refund', [PaymentController::class, 'refund']);
   });
 });
 

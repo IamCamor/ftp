@@ -14,6 +14,7 @@ import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import UserManagement from './pages/Admin/UserManagement';
+import SubscriptionPage from './pages/SubscriptionPage';
 import { isAuthed, profileMe } from './api';
 import config from './config';
 
@@ -103,6 +104,14 @@ const AppRoot: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <LiveFishingPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/subscription" 
+              element={
+                <ProtectedRoute>
+                  <SubscriptionPage />
                 </ProtectedRoute>
               } 
             />

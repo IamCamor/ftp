@@ -16,7 +16,13 @@ import type {
   AddCommentRequest,
   SaveWeatherFavRequest,
   AddRatingRequest,
-  User
+  User,
+  Subscription,
+  Payment,
+  SubscriptionPlan,
+  PaymentMethod,
+  SubscriptionStatus,
+  SubscriptionPlansResponse
 } from './types';
 
 // Auth
@@ -331,4 +337,66 @@ export async function adminBulkReviewReports(data: { report_ids: number[]; statu
 
 export async function adminReportStatistics(): Promise<any> {
   return request('/admin/reports/statistics', { auth: true });
+}
+
+// Subscription API
+export async function getSubscriptionPlans(): Promise<SubscriptionPlansResponse> {
+  return request('/subscriptions/plans', { auth: true });
+}
+
+export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
+  return request('/subscriptions/status', { auth: true });
+}
+
+export async function getSubscriptions(params: any = {}): Promise<{ data: Subscription[] }> {
+  return request('/subscriptions', { params, auth: true });
+}
+
+export async function createSubscription(data: {
+  type: 'pro' | 'premium';
+  payment_method: 'yandex_pay' | 'sber_pay' | 'apple_pay' | 'google_pay' | 'bonuses';
+  use_trial?: boolean;
+}): Promise<{ data: { subscription: Subscription; payment: Payment } }> {
+  return request('/subscriptions', { method: 'POST', data, auth: true });
+}
+
+export async function getSubscriptionById(id: number): Promise<{ data: Subscription }> {
+  return request(`/subscriptions/${id}`, { auth: true });
+}
+
+export async function cancelSubscription(id: number, reason?: string): Promise<any> {
+  return request(`/subscriptions/${id}/cancel`, { method: 'POST', data: { reason }, auth: true });
+}
+
+export async function extendSubscription(id: number, days: number): Promise<any> {
+  return request(`/subscriptions/${id}/extend`, { method: 'POST', data: { days }, auth: true });
+}
+
+// Payment API
+export async function getPaymentMethods(): Promise<{ data: PaymentMethod[] }> {
+  return request('/payments/methods', { auth: true });
+}
+
+export async function getPayments(params: any = {}): Promise<{ data: Payment[] }> {
+  return request('/payments', { params, auth: true });
+}
+
+export async function getPaymentById(id: number): Promise<{ data: Payment }> {
+  return request(`/payments/${id}`, { auth: true });
+}
+
+export async function processPayment(data: {
+  payment_id: string;
+  provider: 'yandex_pay' | 'sber_pay' | 'apple_pay' | 'google_pay' | 'bonuses';
+  provider_data?: Record<string, any>;
+}): Promise<{ data: Payment }> {
+  return request('/payments/process', { method: 'POST', data, auth: true });
+}
+
+export async function cancelPayment(id: number, reason?: string): Promise<any> {
+  return request(`/payments/${id}/cancel`, { method: 'POST', data: { reason }, auth: true });
+}
+
+export async function refundPayment(id: number, reason?: string): Promise<any> {
+  return request(`/payments/${id}/refund`, { method: 'POST', data: { reason }, auth: true });
 }

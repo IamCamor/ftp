@@ -20,6 +20,11 @@ class User extends Authenticatable implements JWTSubject
         'photo_url',
         'phone',
         'role',
+        'is_premium',
+        'premium_expires_at',
+        'crown_icon_url',
+        'bonus_balance',
+        'last_bonus_earned_at',
         'is_blocked',
         'blocked_at',
         'block_reason',
@@ -34,6 +39,9 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'premium_expires_at' => 'datetime',
+        'last_bonus_earned_at' => 'datetime',
+        'is_premium' => 'boolean',
         'blocked_at' => 'datetime',
         'is_blocked' => 'boolean',
     ];
@@ -93,6 +101,16 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(CatchComment::class);
     }
 
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function getTotalBonusesAttribute()
     {
         return $this->bonuses()->sum('amount');
@@ -134,6 +152,124 @@ class User extends Authenticatable implements JWTSubject
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is Pro.
+     */
+    public function isPro(): bool
+    {
+        return $this->role === 'pro' || $this->hasActiveSubscription('pro');
+    }
+
+    /**
+     * Check if user is Premium.
+     */
+    public function isPremium(): bool
+    {
+        return $this->role === 'premium' || $this->is_premium || $this->hasActiveSubscription('premium');
+    }
+
+    /**
+     * Check if user has active subscription of specific type.
+     */
+    public function hasActiveSubscription(string $type): bool
+    {
+        return $this->subscriptions()
+            ->where('type', $type)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
+
+    /**
+     * Get active subscription of specific type.
+     */
+    public function getActiveSubscription(string $type): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('type', $type)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->first();
+    }
+
+    /**
+     * Get all active subscriptions.
+     */
+    public function getActiveSubscriptions()
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->get();
+    }
+
+    /**
+     * Add bonus balance.
+     */
+    public function addBonusBalance(int $amount): bool
+    {
+        return $this->increment('bonus_balance', $amount);
+    }
+
+    /**
+     * Deduct bonus balance.
+     */
+    public function deductBonusBalance(int $amount): bool
+    {
+        if ($this->bonus_balance < $amount) {
+            return false;
+        }
+
+        return $this->decrement('bonus_balance', $amount);
+    }
+
+    /**
+     * Check if user has enough bonus balance.
+     */
+    public function hasEnoughBonusBalance(int $amount): bool
+    {
+        return $this->bonus_balance >= $amount;
+    }
+
+    /**
+     * Get crown icon URL for premium users.
+     */
+    public function getCrownIconUrl(): ?string
+    {
+        if ($this->isPremium()) {
+            return $this->crown_icon_url ?? config('subscription.premium_crown_icon_url');
+        }
+
+        return null;
+    }
+
+    /**
+     * Scope for Pro users.
+     */
+    public function scopePro($query)
+    {
+        return $query->where('role', 'pro')
+            ->orWhereHas('subscriptions', function ($q) {
+                $q->where('type', 'pro')
+                  ->where('status', 'active')
+                  ->where('expires_at', '>', now());
+            });
+    }
+
+    /**
+     * Scope for Premium users.
+     */
+    public function scopePremium($query)
+    {
+        return $query->where('role', 'premium')
+            ->orWhere('is_premium', true)
+            ->orWhereHas('subscriptions', function ($q) {
+                $q->where('type', 'premium')
+                  ->where('status', 'active')
+                  ->where('expires_at', '>', now());
+            });
     }
 
     /**

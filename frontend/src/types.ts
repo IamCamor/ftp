@@ -4,7 +4,12 @@ export interface User {
   username?: string;
   email?: string;
   photo_url?: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'pro' | 'premium' | 'admin';
+  is_premium?: boolean;
+  premium_expires_at?: string;
+  crown_icon_url?: string;
+  bonus_balance?: number;
+  last_bonus_earned_at?: string;
   total_bonuses?: number;
   average_rating?: number;
   created_at: string;
@@ -242,4 +247,80 @@ export interface LiveSession {
   started_at?: string;
   ended_at?: string;
   created_at: string;
+}
+
+// Subscription types
+export interface Subscription {
+  id: number;
+  user_id: number;
+  type: 'pro' | 'premium';
+  status: 'active' | 'expired' | 'cancelled';
+  payment_method?: 'yandex_pay' | 'sber_pay' | 'apple_pay' | 'google_pay' | 'bonuses';
+  amount?: number;
+  bonus_amount?: number;
+  starts_at?: string;
+  expires_at?: string;
+  cancelled_at?: string;
+  cancellation_reason?: string;
+  metadata?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+  payments?: Payment[];
+}
+
+export interface Payment {
+  id: number;
+  user_id: number;
+  subscription_id?: number;
+  payment_id: string;
+  provider: 'yandex_pay' | 'sber_pay' | 'apple_pay' | 'google_pay' | 'bonuses';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded';
+  type: 'subscription_pro' | 'subscription_premium' | 'bonus_purchase';
+  amount: number;
+  currency: string;
+  bonus_amount?: number;
+  description?: string;
+  provider_data?: Record<string, any>;
+  metadata?: Record<string, any>;
+  paid_at?: string;
+  expires_at?: string;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+  subscription?: Subscription;
+}
+
+export interface SubscriptionPlan {
+  name: string;
+  price_rub: number;
+  price_bonus: number;
+  duration_days: number;
+  features: Record<string, boolean>;
+  description: string;
+  crown_icon_url?: string;
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+export interface SubscriptionStatus {
+  is_pro: boolean;
+  is_premium: boolean;
+  crown_icon_url?: string;
+  bonus_balance: number;
+  active_subscriptions: Subscription[];
+  role: string;
+}
+
+export interface SubscriptionPlansResponse {
+  plans: {
+    pro: SubscriptionPlan;
+    premium: SubscriptionPlan;
+  };
+  payment_methods: PaymentMethod[];
+  user_bonus_balance: number;
 }
