@@ -7,6 +7,7 @@ use App\Models\CatchComment;
 use App\Models\CatchRecord;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class CatchCommentController extends Controller
@@ -49,7 +50,7 @@ class CatchCommentController extends Controller
         $catch = CatchRecord::findOrFail($catchId);
 
         $comment = CatchComment::create([
-            'user_id' => $request->user()->id,
+            'user_id' => Auth::id(),
             'catch_id' => $catchId,
             'content' => $request->content,
         ]);
@@ -77,7 +78,7 @@ class CatchCommentController extends Controller
 
         $comment = CatchComment::where('catch_id', $catchId)
             ->where('id', $commentId)
-            ->where('user_id', $request->user()->id)
+            ->where('user_id', Auth::id())
             ->firstOrFail();
 
         $comment->update([
@@ -100,7 +101,7 @@ class CatchCommentController extends Controller
     {
         $comment = CatchComment::where('catch_id', $catchId)
             ->where('id', $commentId)
-            ->where('user_id', $request->user()->id)
+            ->where('user_id', Auth::id())
             ->firstOrFail();
 
         $comment->delete();
