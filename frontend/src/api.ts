@@ -22,7 +22,12 @@ import type {
   SubscriptionPlan,
   PaymentMethod,
   SubscriptionStatus,
-  SubscriptionPlansResponse
+  SubscriptionPlansResponse,
+  FollowResponse,
+  FollowersResponse,
+  OnlineStatusResponse,
+  OnlineUsersResponse,
+  MediaLimits
 } from './types';
 
 // Auth
@@ -399,4 +404,86 @@ export async function cancelPayment(id: number, reason?: string): Promise<any> {
 
 export async function refundPayment(id: number, reason?: string): Promise<any> {
   return request(`/payments/${id}/refund`, { method: 'POST', data: { reason }, auth: true });
+}
+
+// Follow API
+export async function followUser(userId: number): Promise<FollowResponse> {
+  return request('/follow', { method: 'POST', data: { user_id: userId }, auth: true });
+}
+
+export async function unfollowUser(userId: number): Promise<FollowResponse> {
+  return request('/unfollow', { method: 'POST', data: { user_id: userId }, auth: true });
+}
+
+export async function toggleFollow(userId: number): Promise<FollowResponse> {
+  return request('/follow/toggle', { method: 'POST', data: { user_id: userId }, auth: true });
+}
+
+export async function getFollowSuggestions(limit: number = 10): Promise<{ data: User[] }> {
+  return request('/follow/suggestions', { params: { limit }, auth: true });
+}
+
+export async function getUserFollowers(userId: number, params: any = {}): Promise<FollowersResponse> {
+  return request(`/users/${userId}/followers`, { params, auth: true });
+}
+
+export async function getUserFollowing(userId: number, params: any = {}): Promise<FollowersResponse> {
+  return request(`/users/${userId}/following`, { params, auth: true });
+}
+
+export async function isFollowing(userId: number): Promise<{ data: { following: boolean; followers_count: number; following_count: number } }> {
+  return request(`/users/${userId}/is-following`, { auth: true });
+}
+
+export async function getMutualFollows(userId: number, limit: number = 10): Promise<{ data: User[] }> {
+  return request(`/users/${userId}/mutual`, { params: { limit }, auth: true });
+}
+
+// Online Status API
+export async function updateOnlineStatus(isOnline: boolean = true): Promise<OnlineStatusResponse> {
+  return request('/online/update', { method: 'POST', data: { is_online: isOnline }, auth: true });
+}
+
+export async function setOffline(): Promise<OnlineStatusResponse> {
+  return request('/online/offline', { method: 'POST', auth: true });
+}
+
+export async function getOnlineStatus(): Promise<OnlineStatusResponse> {
+  return request('/online/status', { auth: true });
+}
+
+export async function getOnlineUsers(params: any = {}): Promise<OnlineUsersResponse> {
+  return request('/online/users', { params, auth: true });
+}
+
+export async function getRecentlyActiveUsers(minutes: number = 30, limit: number = 20): Promise<OnlineUsersResponse> {
+  return request('/online/recently-active', { params: { minutes, limit }, auth: true });
+}
+
+export async function getOnlineCount(): Promise<{ data: { online_count: number } }> {
+  return request('/online/count', { auth: true });
+}
+
+// Enhanced Feed API
+export async function getFeed(params: {
+  type?: 'all' | 'following' | 'nearby';
+  latitude?: number;
+  longitude?: number;
+  radius?: number;
+  limit?: number;
+  page?: number;
+} = {}): Promise<{ data: { data: CatchRecord[]; current_page: number; last_page: number; per_page: number; total: number } }> {
+  return request('/feed', { params, auth: true });
+}
+
+export async function getPersonalFeed(limit: number = 20, page: number = 1): Promise<{ data: { data: CatchRecord[]; current_page: number; last_page: number; per_page: number; total: number } }> {
+  return request('/feed/personal', { params: { limit, page }, auth: true });
+}
+
+export async function getNearbyFeed(latitude: number, longitude: number, radius: number = 50, limit: number = 20): Promise<{ data: { data: CatchRecord[]; current_page: number; last_page: number; per_page: number; total: number } }> {
+  return request('/feed/nearby', { params: { latitude, longitude, radius, limit }, auth: true });
+}
+
+export async function getFollowingFeed(limit: number = 20, page: number = 1): Promise<{ data: { data: CatchRecord[]; current_page: number; last_page: number; per_page: number; total: number } }> {
+  return request('/feed/following', { params: { limit, page }, auth: true });
 }

@@ -25,6 +25,11 @@ class User extends Authenticatable implements JWTSubject
         'crown_icon_url',
         'bonus_balance',
         'last_bonus_earned_at',
+        'followers_count',
+        'following_count',
+        'total_likes_received',
+        'last_seen_at',
+        'is_online',
         'is_blocked',
         'blocked_at',
         'block_reason',
@@ -41,7 +46,9 @@ class User extends Authenticatable implements JWTSubject
         'password' => 'hashed',
         'premium_expires_at' => 'datetime',
         'last_bonus_earned_at' => 'datetime',
+        'last_seen_at' => 'datetime',
         'is_premium' => 'boolean',
+        'is_online' => 'boolean',
         'blocked_at' => 'datetime',
         'is_blocked' => 'boolean',
     ];
@@ -241,8 +248,124 @@ class User extends Authenticatable implements JWTSubject
         if ($this->isPremium()) {
             return $this->crown_icon_url ?? config('subscription.premium_crown_icon_url');
         }
-
+        
         return null;
+    }
+
+    /**
+     * Get users that this user is following.
+     */
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get users that follow this user.
+     */
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Check if this user is following another user.
+     */
+    public function isFollowing(User $user): bool
+    {
+        return $this->following()->where('following_id', $user->id)->exists();
+    }
+
+    /**
+     * Check if this user is followed by another user.
+     */
+    public function isFollowedBy(User $user): bool
+    {
+        return $this->followers()->where('follower_id', $user->id)->exists();
+    }
+
+    /**
+     * Follow a user.
+     */
+    public function follow(User $user): bool
+    {
+        if ($this->id === $user->id) {
+            return false; // Cannot follow yourself
+        }
+
+        if ($this->isFollowing($user)) {
+            return false; // Already following
+        }
+
+        $this->following()->attach($user->id);
+        
+        // Update counters
+        $this->increment('following_count');
+        $user->increment('followers_count');
+
+        return true;
+    }
+
+    /**
+     * Unfollow a user.
+     */
+    public function unfollow(User $user): bool
+    {
+        if (!$this->isFollowing($user)) {
+            return false; // Not following
+        }
+
+        $this->following()->detach($user->id);
+        
+        // Update counters
+        $this->decrement('following_count');
+        $user->decrement('followers_count');
+
+        return true;
+    }
+
+    /**
+     * Toggle follow status.
+     */
+    public function toggleFollow(User $user): array
+    {
+        if ($this->isFollowing($user)) {
+            $success = $this->unfollow($user);
+            return ['following' => false, 'success' => $success];
+        } else {
+            $success = $this->follow($user);
+            return ['following' => true, 'success' => $success];
+        }
+    }
+
+    /**
+     * Update online status.
+     */
+    public function updateOnlineStatus(bool $isOnline = true): bool
+    {
+        return $this->update([
+            'is_online' => $isOnline,
+            'last_seen_at' => now(),
+        ]);
+    }
+
+    /**
+     * Get online users.
+     */
+    public function scopeOnline($query)
+    {
+        return $query->where('is_online', true)
+                    ->where('last_seen_at', '>', now()->subMinutes(5));
+    }
+
+    /**
+     * Get recently active users.
+     */
+    public function scopeRecentlyActive($query, int $minutes = 30)
+    {
+        return $query->where('last_seen_at', '>', now()->subMinutes($minutes));
     }
 
     /**

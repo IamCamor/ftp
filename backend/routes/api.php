@@ -30,6 +30,8 @@ use App\Http\Controllers\Api\V1\ReferenceController;
 use App\Http\Controllers\Api\V1\FishSpeciesController;
 use App\Http\Controllers\Api\V1\LandingPageController;
 use App\Http\Controllers\Api\V1\PushNotificationController;
+use App\Http\Controllers\Api\V1\FollowController;
+use App\Http\Controllers\Api\V1\OnlineStatusController;
 use App\Http\Controllers\WebhookController;
 
 Route::prefix('v1')->group(function () {
@@ -43,9 +45,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/auth/{provider}/redirect', [OAuthController::class, 'redirect']);
     Route::get('/auth/{provider}/callback', [OAuthController::class, 'callback']);
 
-    // Feed/Catch
-    Route::get('/feed', [FeedController::class, 'index']);
-    Route::get('/catch/{id}', [CatchController::class, 'show']);
+  // Feed/Catch
+  Route::get('/feed', [FeedController::class, 'index']);
+  Route::get('/feed/personal', [FeedController::class, 'personal']);
+  Route::get('/feed/nearby', [FeedController::class, 'nearby']);
+  Route::get('/feed/following', [FeedController::class, 'following']);
+  Route::get('/catch/{id}', [CatchController::class, 'show']);
     Route::post('/catch', [CatchController::class, 'store'])->middleware('auth:api');
     Route::post('/catch/{id}/like', [CatchLikeController::class, 'toggle'])->middleware('auth:api');
     Route::post('/catch/{id}/comments', [CatchCommentController::class, 'store'])->middleware('auth:api');
@@ -189,6 +194,28 @@ Route::prefix('v1')->group(function () {
     Route::get('/notifications', [PushNotificationController::class, 'index']);
     Route::post('/notifications/register-token', [PushNotificationController::class, 'registerToken']);
     Route::post('/notifications/unregister-token', [PushNotificationController::class, 'unregisterToken']);
+  });
+
+  // Follow routes
+  Route::middleware('auth:api')->group(function () {
+    Route::post('/follow', [FollowController::class, 'follow']);
+    Route::post('/unfollow', [FollowController::class, 'unfollow']);
+    Route::post('/follow/toggle', [FollowController::class, 'toggle']);
+    Route::get('/follow/suggestions', [FollowController::class, 'suggestions']);
+    Route::get('/users/{user}/followers', [FollowController::class, 'followers']);
+    Route::get('/users/{user}/following', [FollowController::class, 'following']);
+    Route::get('/users/{user}/is-following', [FollowController::class, 'isFollowing']);
+    Route::get('/users/{user}/mutual', [FollowController::class, 'mutual']);
+  });
+
+  // Online status routes
+  Route::middleware('auth:api')->group(function () {
+    Route::post('/online/update', [OnlineStatusController::class, 'update']);
+    Route::post('/online/offline', [OnlineStatusController::class, 'offline']);
+    Route::get('/online/status', [OnlineStatusController::class, 'status']);
+    Route::get('/online/users', [OnlineStatusController::class, 'online']);
+    Route::get('/online/recently-active', [OnlineStatusController::class, 'recentlyActive']);
+    Route::get('/online/count', [OnlineStatusController::class, 'count']);
   });
 });
 

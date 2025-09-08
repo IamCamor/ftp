@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import BannerSlot from '../components/BannerSlot';
-import { feed, likeCatch } from '../api';
+import FeedFilters from '../components/FeedFilters';
+import OnlineIndicator from '../components/OnlineIndicator';
+import { getFeed, likeCatch } from '../api';
 import type { CatchRecord } from '../types';
 import config from '../config';
 
@@ -12,16 +14,59 @@ const FeedScreen: React.FC = () => {
   const [catches, setCatches] = useState<CatchRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'following' | 'nearby'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   useEffect(() => {
     loadFeed();
-  }, []);
+    getUserLocation();
+  }, [activeFilter]);
 
-  const loadFeed = async () => {
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    }
+  };
+
+  const loadFeed = async (page: number = 1, append: boolean = false) => {
     try {
       setLoading(true);
-      const data = await feed();
-      setCatches(data);
+      
+      const params: any = {
+        type: activeFilter,
+        page,
+        limit: 20
+      };
+
+      if (activeFilter === 'nearby' && userLocation) {
+        params.latitude = userLocation.latitude;
+        params.longitude = userLocation.longitude;
+        params.radius = 50;
+      }
+
+      const response = await getFeed(params);
+      const newCatches = response.data.data;
+      
+      if (append) {
+        setCatches(prev => [...prev, ...newCatches]);
+      } else {
+        setCatches(newCatches);
+      }
+
+      setCurrentPage(page);
+      setHasMore(page < response.data.last_page);
     } catch (err) {
       setError('Не удалось загрузить ленту');
       console.error('Feed loading error:', err);
@@ -45,6 +90,18 @@ const FeedScreen: React.FC = () => {
 
   const handleCatchClick = (catchId: number) => {
     navigate(config.routes.catchDetail(catchId));
+  };
+
+  const handleFilterChange = (filter: 'all' | 'following' | 'nearby') => {
+    setActiveFilter(filter);
+    setCurrentPage(1);
+    setCatches([]);
+  };
+
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      loadFeed(currentPage + 1, true);
+    }
   };
 
   if (loading) {
@@ -72,14 +129,32 @@ const FeedScreen: React.FC = () => {
     <div className="screen">
       <BannerSlot slot="feed_top" className="feed-banner" />
       
+      <FeedFilters 
+        activeFilter={activeFilter}
+        onFilterChange={handleFilterChange}
+        className="feed-filters"
+      />
+      
       <div className="feed">
         {catches.map((catchRecord) => (
           <div key={catchRecord.id} className="catch-card glass">
             <div className="catch-header">
               <div className="user-info">
-                <Avatar src={catchRecord.user.photo_url} size={40} />
+                <Avatar 
+                  src={catchRecord.user.photo_url} 
+                  size={40}
+                  crownIconUrl={catchRecord.user.crown_icon_url}
+                  isPremium={catchRecord.user.is_premium}
+                />
                 <div className="user-details">
-                  <span className="user-name">{catchRecord.user.name}</span>
+                  <div className="user-name-row">
+                    <span className="user-name">{catchRecord.user.name}</span>
+                    <OnlineIndicator 
+                      isOnline={catchRecord.user.is_online || false}
+                      lastSeenAt={catchRecord.user.last_seen_at}
+                      size="small"
+                    />
+                  </div>
                   {catchRecord.user.username && (
                     <span className="user-username">@{catchRecord.user.username}</span>
                   )}
@@ -159,6 +234,18 @@ const FeedScreen: React.FC = () => {
             </div>
           </div>
         ))}
+
+        {hasMore && (
+          <div className="load-more-section">
+            <button 
+              className="load-more-button"
+              onClick={loadMore}
+              disabled={loading}
+            >
+              {loading ? 'Загрузка...' : 'Загрузить еще'}
+            </button>
+          </div>
+        )}
       </div>
 
       <BannerSlot slot="feed_bottom" className="feed-banner" />

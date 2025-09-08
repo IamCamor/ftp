@@ -19,6 +19,11 @@ class CatchRecord extends Model
         'weather',
         'temperature',
         'description',
+        'photos',
+        'videos',
+        'main_photo',
+        'main_video',
+        'media_count',
         'caught_at',
         'is_public',
         'likes_count',
@@ -48,6 +53,8 @@ class CatchRecord extends Model
         'is_public' => 'boolean',
         'is_blocked' => 'boolean',
         'is_edited_by_admin' => 'boolean',
+        'photos' => 'array',
+        'videos' => 'array',
         'tackle_used' => 'array',
     ];
 
@@ -213,6 +220,135 @@ class CatchRecord extends Model
     public function scopeEditedByAdmin($query)
     {
         return $query->where('is_edited_by_admin', true);
+    }
+
+    /**
+     * Get media limits for user role.
+     */
+    public function getMediaLimits(): array
+    {
+        $userRole = $this->user->role;
+        return config("media.limits.{$userRole}", config('media.limits.user'));
+    }
+
+    /**
+     * Check if user can add more photos.
+     */
+    public function canAddPhotos(int $count = 1): bool
+    {
+        $limits = $this->getMediaLimits();
+        $currentPhotos = count($this->photos ?? []);
+        return ($currentPhotos + $count) <= $limits['max_photos'];
+    }
+
+    /**
+     * Check if user can add more videos.
+     */
+    public function canAddVideos(int $count = 1): bool
+    {
+        $limits = $this->getMediaLimits();
+        if (!$limits['video_enabled']) {
+            return false;
+        }
+        $currentVideos = count($this->videos ?? []);
+        return ($currentVideos + $count) <= $limits['max_videos'];
+    }
+
+    /**
+     * Check if user can add more media total.
+     */
+    public function canAddMedia(int $count = 1): bool
+    {
+        $limits = $this->getMediaLimits();
+        return ($this->media_count + $count) <= $limits['max_media_total'];
+    }
+
+    /**
+     * Add photos to catch.
+     */
+    public function addPhotos(array $photoUrls): bool
+    {
+        if (!$this->canAddPhotos(count($photoUrls))) {
+            return false;
+        }
+
+        $currentPhotos = $this->photos ?? [];
+        $newPhotos = array_merge($currentPhotos, $photoUrls);
+        
+        $this->update([
+            'photos' => $newPhotos,
+            'main_photo' => $this->main_photo ?: $photoUrls[0] ?? null,
+            'media_count' => count($newPhotos) + count($this->videos ?? []),
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Add videos to catch.
+     */
+    public function addVideos(array $videoUrls): bool
+    {
+        if (!$this->canAddVideos(count($videoUrls))) {
+            return false;
+        }
+
+        $currentVideos = $this->videos ?? [];
+        $newVideos = array_merge($currentVideos, $videoUrls);
+        
+        $this->update([
+            'videos' => $newVideos,
+            'main_video' => $this->main_video ?: $videoUrls[0] ?? null,
+            'media_count' => count($this->photos ?? []) + count($newVideos),
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Get main media for preview.
+     */
+    public function getMainMedia(): ?string
+    {
+        return $this->main_video ?: $this->main_photo;
+    }
+
+    /**
+     * Check if catch has videos.
+     */
+    public function hasVideos(): bool
+    {
+        return !empty($this->videos);
+    }
+
+    /**
+     * Check if catch has photos.
+     */
+    public function hasPhotos(): bool
+    {
+        return !empty($this->photos);
+    }
+
+    /**
+     * Get all media URLs.
+     */
+    public function getAllMedia(): array
+    {
+        $media = [];
+        
+        if ($this->photos) {
+            foreach ($this->photos as $photo) {
+                $media[] = ['type' => 'photo', 'url' => $photo];
+            }
+        }
+        
+        if ($this->videos) {
+            foreach ($this->videos as $video) {
+                $media[] = ['type' => 'video', 'url' => $video];
+            }
+        }
+        
+        return $media;
     }
 }
 

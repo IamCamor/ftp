@@ -10,6 +10,11 @@ export interface User {
   crown_icon_url?: string;
   bonus_balance?: number;
   last_bonus_earned_at?: string;
+  followers_count?: number;
+  following_count?: number;
+  total_likes_received?: number;
+  last_seen_at?: string;
+  is_online?: boolean;
   total_bonuses?: number;
   average_rating?: number;
   created_at: string;
@@ -27,12 +32,38 @@ export interface CatchRecord {
   lure?: string;
   tackle?: string;
   notes?: string;
-  photo_url?: string;
+  photos?: string[];
+  videos?: string[];
+  main_photo?: string;
+  main_video?: string;
+  media_count?: number;
+  photo_url?: string; // Legacy field
   privacy: 'all' | 'friends' | 'me';
   caught_at?: string;
   likes_count: number;
   comments_count: number;
   liked_by_me?: boolean;
+  point?: {
+    id: number;
+    name: string;
+    latitude: number;
+    longitude: number;
+  };
+  fish_species?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  fishing_method?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  fishing_location?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
   created_at: string;
 }
 
@@ -323,4 +354,47 @@ export interface SubscriptionPlansResponse {
   };
   payment_methods: PaymentMethod[];
   user_bonus_balance: number;
+}
+
+// Follow types
+export interface FollowResponse {
+  success: boolean;
+  message: string;
+  data: {
+    following: boolean;
+    followers_count: number;
+  };
+}
+
+export interface FollowersResponse {
+  success: boolean;
+  data: {
+    data: User[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+}
+
+// Online status types
+export interface OnlineStatusResponse {
+  success: boolean;
+  data: {
+    is_online: boolean;
+    last_seen_at: string;
+  };
+}
+
+export interface OnlineUsersResponse {
+  success: boolean;
+  data: User[];
+}
+
+// Media limits types
+export interface MediaLimits {
+  max_photos: number;
+  max_videos: number;
+  max_media_total: number;
+  video_enabled: boolean;
 }

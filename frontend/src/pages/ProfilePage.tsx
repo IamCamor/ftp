@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
-import { profileMe, logout, getBonuses } from '../api';
-import type { User, Bonus } from '../types';
+import FollowStats from '../components/FollowStats';
+import FollowersModal from '../components/FollowersModal';
+import { profileMe, logout, getBonuses, getUserFollowers, getUserFollowing } from '../api';
+import type { User, Bonus, FollowersResponse } from '../types';
 import config from '../config';
 
 const ProfilePage: React.FC = () => {
@@ -12,6 +14,10 @@ const ProfilePage: React.FC = () => {
   const [bonuses, setBonuses] = useState<Bonus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followers, setFollowers] = useState<FollowersResponse | null>(null);
+  const [following, setFollowing] = useState<FollowersResponse | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -44,6 +50,30 @@ const ProfilePage: React.FC = () => {
       // Force logout even if API call fails
       localStorage.removeItem('token');
       navigate(config.routes.auth.login);
+    }
+  };
+
+  const handleShowFollowers = async () => {
+    if (!user) return;
+    
+    try {
+      const data = await getUserFollowers(user.id);
+      setFollowers(data);
+      setShowFollowersModal(true);
+    } catch (err) {
+      console.error('Error loading followers:', err);
+    }
+  };
+
+  const handleShowFollowing = async () => {
+    if (!user) return;
+    
+    try {
+      const data = await getUserFollowing(user.id);
+      setFollowing(data);
+      setShowFollowingModal(true);
+    } catch (err) {
+      console.error('Error loading following:', err);
     }
   };
 
@@ -96,6 +126,15 @@ const ProfilePage: React.FC = () => {
           <h2>{user.name}</h2>
           {user.username && <p>@{user.username}</p>}
           {user.email && <p>{user.email}</p>}
+          
+          <FollowStats
+            followersCount={user.followers_count || 0}
+            followingCount={user.following_count || 0}
+            likesCount={user.total_likes_received || 0}
+            onFollowersClick={handleShowFollowers}
+            onFollowingClick={handleShowFollowing}
+            onLikesClick={() => {}} // TODO: Implement likes modal
+          />
           
           <div className="profile-stats">
             <div className="stat-item">
@@ -158,6 +197,28 @@ const ProfilePage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Followers Modal */}
+      {showFollowersModal && followers && (
+        <FollowersModal
+          title="Подписчики"
+          users={followers.data}
+          onClose={() => setShowFollowersModal(false)}
+          onLoadMore={() => {}} // TODO: Implement pagination
+          hasMore={followers.current_page < followers.last_page}
+        />
+      )}
+
+      {/* Following Modal */}
+      {showFollowingModal && following && (
+        <FollowersModal
+          title="Подписки"
+          users={following.data}
+          onClose={() => setShowFollowingModal(false)}
+          onLoadMore={() => {}} // TODO: Implement pagination
+          hasMore={following.current_page < following.last_page}
+        />
+      )}
     </div>
   );
 };
