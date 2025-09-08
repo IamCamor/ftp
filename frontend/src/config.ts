@@ -24,9 +24,9 @@ type FeatureFlags = {
 };
 
 const config = {
-  apiBase: 'https://api.fishtrackpro.ru/api/v1',
-  siteBase: 'https://www.fishtrackpro.ru',
-  assetsBase: 'https://www.fishtrackpro.ru/assets',
+  apiBase: import.meta.env.VITE_API_BASE || 'http://localhost:8000/api/v1',
+  siteBase: import.meta.env.VITE_SITE_BASE || 'http://localhost:5173',
+  assetsBase: import.meta.env.VITE_ASSETS_BASE || 'http://localhost:5173/assets',
   logoUrl: '/logo.svg',
   defaultAvatar: '/default-avatar.png',
   glassEnabled: true,
