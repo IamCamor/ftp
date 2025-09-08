@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
-import Header from '../components/Header';
+import PageHeader from '../components/PageHeader';
 import ReferenceCard from '../components/ReferenceCard';
 import Icon from '../components/Icon';
 import { request } from '../utils/http';
@@ -153,7 +153,7 @@ const ReferencePage: React.FC = () => {
         type="website"
       />
       
-      <Header title={selectedType ? getTypeTitle(selectedType) : 'Справочники'} />
+      <PageHeader title={selectedType ? getTypeTitle(selectedType) : 'Справочники'} />
       
       <div className="reference-page">
         {/* Search */}

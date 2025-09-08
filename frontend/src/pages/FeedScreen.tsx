@@ -117,7 +117,7 @@ const FeedScreen: React.FC = () => {
       <div className="screen">
         <div className="error">
           <p>{error}</p>
-          <button onClick={loadFeed} className="btn btn-primary">
+          <button onClick={() => loadFeed()} className="btn btn-primary">
             Попробовать снова
           </button>
         </div>

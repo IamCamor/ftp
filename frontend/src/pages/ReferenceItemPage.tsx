@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
-import Header from '../components/Header';
+import PageHeader from '../components/PageHeader';
 import Icon from '../components/Icon';
 import { request } from '../utils/http';
 
@@ -273,7 +273,7 @@ const ReferenceItemPage: React.FC = () => {
   if (loading) {
     return (
       <div className="page">
-        <Header title="Загрузка..." />
+        <PageHeader title="Загрузка..." />
         <div className="loading">Загрузка...</div>
       </div>
     );
@@ -282,7 +282,7 @@ const ReferenceItemPage: React.FC = () => {
   if (error || !item) {
     return (
       <div className="page">
-        <Header title="Ошибка" />
+        <PageHeader title="Ошибка" />
         <div className="error">
           <Icon name="error" />
           <h3>{error || 'Элемент не найден'}</h3>
@@ -307,7 +307,7 @@ const ReferenceItemPage: React.FC = () => {
         image={item.photo_url}
       />
       
-      <Header 
+      <PageHeader 
         title={item.name}
         showBack
         onBack={() => navigate(`/reference/${type}`)}

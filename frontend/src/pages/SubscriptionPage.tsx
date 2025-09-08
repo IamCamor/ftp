@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getSubscriptionPlans, getSubscriptionStatus, createSubscription } from '../api';
-import type { SubscriptionPlansResponse, SubscriptionStatus, SubscriptionPlan, PaymentMethod } from '../types';
+import type { SubscriptionPlansResponse, SubscriptionStatus } from '../types';
 import Icon from '../components/Icon';
-import Header from '../components/Header';
+import PageHeader from '../components/PageHeader';
 
 const SubscriptionPage: React.FC = () => {
   const [plans, setPlans] = useState<SubscriptionPlansResponse | null>(null);
@@ -69,7 +69,7 @@ const SubscriptionPage: React.FC = () => {
   if (loading) {
     return (
       <div className="page">
-        <Header title="Подписки" />
+        <PageHeader title="Подписки" />
         <div className="loading">Загрузка...</div>
       </div>
     );
@@ -78,7 +78,7 @@ const SubscriptionPage: React.FC = () => {
   if (!plans || !status) {
     return (
       <div className="page">
-        <Header title="Подписки" />
+        <PageHeader title="Подписки" />
         <div className="error">Ошибка загрузки данных</div>
       </div>
     );
@@ -86,7 +86,7 @@ const SubscriptionPage: React.FC = () => {
 
   return (
     <div className="page">
-      <Header title="Подписки" />
+      <PageHeader title="Подписки" />
       
       <div className="subscription-page">
         {/* Current Status */}

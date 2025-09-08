@@ -15,7 +15,6 @@ interface ReferenceCardProps {
 }
 
 const ReferenceCard: React.FC<ReferenceCardProps> = ({
-  id,
   name,
   description,
   photoUrl,

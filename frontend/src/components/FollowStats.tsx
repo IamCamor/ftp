@@ -1,43 +1,24 @@
-import React, { useState } from 'react';
-import { User } from '../types';
-import { getUserFollowers, getUserFollowing } from '../api';
-import FollowersModal from './FollowersModal';
+import React from 'react';
 
 interface FollowStatsProps {
-  user: User;
-  onFollowToggle?: (userId: number) => void;
-  isFollowing?: boolean;
-  showFollowButton?: boolean;
+  followersCount: number;
+  followingCount: number;
+  likesCount: number;
+  onFollowersClick: () => void;
+  onFollowingClick: () => void;
+  onLikesClick: () => void;
   className?: string;
 }
 
 const FollowStats: React.FC<FollowStatsProps> = ({
-  user,
-  onFollowToggle,
-  isFollowing = false,
-  showFollowButton = false,
+  followersCount,
+  followingCount,
+  likesCount,
+  onFollowersClick,
+  onFollowingClick,
+  onLikesClick,
   className = ''
 }) => {
-  const [showFollowersModal, setShowFollowersModal] = useState(false);
-  const [showFollowingModal, setShowFollowingModal] = useState(false);
-  const [modalType, setModalType] = useState<'followers' | 'following'>('followers');
-
-  const handleFollowersClick = () => {
-    setModalType('followers');
-    setShowFollowersModal(true);
-  };
-
-  const handleFollowingClick = () => {
-    setModalType('following');
-    setShowFollowingModal(true);
-  };
-
-  const handleFollowClick = () => {
-    if (onFollowToggle) {
-      onFollowToggle(user.id);
-    }
-  };
-
   const formatCount = (count: number): string => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`;
@@ -50,46 +31,21 @@ const FollowStats: React.FC<FollowStatsProps> = ({
   return (
     <div className={`follow-stats ${className}`}>
       <div className="stats-row">
-        <div className="stat-item" onClick={handleFollowersClick}>
-          <span className="stat-number">{formatCount(user.followers_count || 0)}</span>
+        <div className="stat-item" onClick={onFollowersClick}>
+          <span className="stat-number">{formatCount(followersCount)}</span>
           <span className="stat-label">подписчиков</span>
         </div>
         
-        <div className="stat-item" onClick={handleFollowingClick}>
-          <span className="stat-number">{formatCount(user.following_count || 0)}</span>
+        <div className="stat-item" onClick={onFollowingClick}>
+          <span className="stat-number">{formatCount(followingCount)}</span>
           <span className="stat-label">подписок</span>
         </div>
         
-        <div className="stat-item">
-          <span className="stat-number">{formatCount(user.total_likes_received || 0)}</span>
+        <div className="stat-item" onClick={onLikesClick}>
+          <span className="stat-number">{formatCount(likesCount)}</span>
           <span className="stat-label">лайков</span>
         </div>
       </div>
-
-      {showFollowButton && (
-        <button 
-          className={`follow-button ${isFollowing ? 'following' : 'not-following'}`}
-          onClick={handleFollowClick}
-        >
-          {isFollowing ? 'Отписаться' : 'Подписаться'}
-        </button>
-      )}
-
-      {showFollowersModal && (
-        <FollowersModal
-          user={user}
-          type={modalType}
-          onClose={() => setShowFollowersModal(false)}
-        />
-      )}
-
-      {showFollowingModal && (
-        <FollowersModal
-          user={user}
-          type={modalType}
-          onClose={() => setShowFollowingModal(false)}
-        />
-      )}
     </div>
   );
 };

@@ -62,7 +62,7 @@ const UserManagement: React.FC = () => {
     {
       key: 'name',
       label: 'Пользователь',
-      render: (value: string, row: any) => (
+      render: (_value: string, row: any) => (
         <div className="user-cell">
           <div className="user-cell__avatar">
             <Icon name="person" />

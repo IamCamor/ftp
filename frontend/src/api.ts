@@ -19,15 +19,12 @@ import type {
   User,
   Subscription,
   Payment,
-  SubscriptionPlan,
-  PaymentMethod,
   SubscriptionStatus,
   SubscriptionPlansResponse,
   FollowResponse,
   FollowersResponse,
   OnlineStatusResponse,
-  OnlineUsersResponse,
-  MediaLimits
+  OnlineUsersResponse
 } from './types';
 
 // Auth
@@ -378,7 +375,7 @@ export async function extendSubscription(id: number, days: number): Promise<any>
 }
 
 // Payment API
-export async function getPaymentMethods(): Promise<{ data: PaymentMethod[] }> {
+export async function getPaymentMethods(): Promise<{ data: any[] }> {
   return request('/payments/methods', { auth: true });
 }
 

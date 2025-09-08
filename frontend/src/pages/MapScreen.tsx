@@ -34,11 +34,11 @@ const MapScreen: React.FC = () => {
     }
   };
 
-  const handleMapClick = (e: L.LeafletMouseEvent) => {
-    const { lat, lng } = e.latlng;
-    setClickedCoords({ lat, lng });
-    setShowWeatherModal(true);
-  };
+  // const handleMapClick = (_e: L.LeafletMouseEvent) => {
+  //   // const { lat, lng } = e.latlng;
+  //   // setClickedCoords({ lat, lng });
+  //   // setShowWeatherModal(true);
+  // };
 
   const handleSaveWeatherFav = async () => {
     if (!clickedCoords) return;

@@ -25,7 +25,7 @@ const WeatherPage: React.FC = () => {
     }
   };
 
-  const getWeatherData = (fav: WeatherFav) => {
+  const getWeatherData = (_fav: WeatherFav) => {
     // Mock weather data - в реальном приложении здесь будет API погоды
     return {
       temperature: Math.round(Math.random() * 30 - 10), // -10 to 20°C

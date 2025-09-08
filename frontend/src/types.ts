@@ -367,14 +367,11 @@ export interface FollowResponse {
 }
 
 export interface FollowersResponse {
-  success: boolean;
-  data: {
-    data: User[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-  };
+  data: User[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
 }
 
 // Online status types

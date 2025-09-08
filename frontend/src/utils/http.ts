@@ -1,15 +1,30 @@
-import config from '../config';
+import appConfig from '../config';
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   data?: any;
   auth?: boolean;
+  params?: Record<string, any>;
 }
 
 export async function request(path: string, options: RequestOptions = {}) {
-  const { method = 'GET', data, auth = false } = options;
+  const { method = 'GET', data, auth = false, params } = options;
   
-  const url = `${config.apiBase}${path}`;
+  let url = `${appConfig.apiBase}${path}`;
+  
+  // Add query parameters for GET requests
+  if (params && method === 'GET') {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+    if (searchParams.toString()) {
+      url += `?${searchParams.toString()}`;
+    }
+  }
+  
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
@@ -21,17 +36,17 @@ export async function request(path: string, options: RequestOptions = {}) {
     }
   }
 
-  const config: RequestInit = {
+  const requestConfig: RequestInit = {
     method,
     headers,
   };
 
   if (data && method !== 'GET') {
-    config.body = JSON.stringify(data);
+    requestConfig.body = JSON.stringify(data);
   }
 
   try {
-    const response = await fetch(url, config);
+    const response = await fetch(url, requestConfig);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

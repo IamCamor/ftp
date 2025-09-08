@@ -1,174 +1,129 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
-import { getUserFollowers, getUserFollowing, toggleFollow } from '../api';
-import Icon from './Icon';
+import { toggleFollow } from '../api';
 import Avatar from './Avatar';
 
 interface FollowersModalProps {
-  user: User;
-  type: 'followers' | 'following';
+  title: string;
+  users: User[];
   onClose: () => void;
+  onLoadMore: () => void;
+  hasMore: boolean;
 }
 
 const FollowersModal: React.FC<FollowersModalProps> = ({
-  user,
-  type,
-  onClose
+  title,
+  users,
+  onClose,
+  onLoadMore,
+  hasMore
 }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [following, setFollowing] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    loadUsers();
-  }, [type, searchQuery]);
-
-  const loadUsers = async (page: number = 1, append: boolean = false) => {
-    setLoading(true);
-    try {
-      const params = {
-        page,
-        limit: 20,
-        ...(searchQuery && { search: searchQuery })
-      };
-
-      const response = type === 'followers' 
-        ? await getUserFollowers(user.id, params)
-        : await getUserFollowing(user.id, params);
-
-      const newUsers = response.data.data;
-      
-      if (append) {
-        setUsers(prev => [...prev, ...newUsers]);
-      } else {
-        setUsers(newUsers);
-      }
-
-      setCurrentPage(page);
-      setHasMore(page < response.data.last_page);
-    } catch (error) {
-      console.error('Error loading users:', error);
-    } finally {
-      setLoading(false);
+    if (searchQuery.trim()) {
+      const filtered = users.filter(user => 
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.username?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    } else {
+      setFilteredUsers(users);
     }
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-    setUsers([]);
-  };
+  }, [searchQuery, users]);
 
   const handleFollowToggle = async (userId: number) => {
     try {
-      await toggleFollow(userId);
-      
-      setFollowing(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(userId)) {
-          newSet.delete(userId);
-        } else {
-          newSet.add(userId);
-        }
-        return newSet;
-      });
+      const response = await toggleFollow(userId);
+      if (response.success) {
+        setFollowing(prev => {
+          const newSet = new Set(prev);
+          if (response.data?.following) {
+            newSet.add(userId);
+          } else {
+            newSet.delete(userId);
+          }
+          return newSet;
+        });
+      }
     } catch (error) {
       console.error('Error toggling follow:', error);
     }
   };
 
-  const loadMore = () => {
-    if (!loading && hasMore) {
-      loadUsers(currentPage + 1, true);
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    try {
+      await onLoadMore();
+    } finally {
+      setLoadingMore(false);
     }
-  };
-
-  const getTitle = () => {
-    return type === 'followers' ? 'Подписчики' : 'Подписки';
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="followers-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{getTitle()}</h2>
+          <h2>{title}</h2>
           <button className="close-button" onClick={onClose}>
-            <Icon name="close" />
+            <span className="material-symbols-rounded">close</span>
           </button>
         </div>
-
+        
         <div className="modal-content">
           <div className="search-section">
             <div className="search-input-group">
-              <Icon name="search" />
+              <span className="material-symbols-rounded">search</span>
               <input
                 type="text"
-                placeholder="Поиск..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
                 className="search-input"
+                placeholder="Поиск пользователей..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
-
+          
           <div className="users-list">
-            {loading && users.length === 0 ? (
-              <div className="loading">Загрузка...</div>
-            ) : users.length > 0 ? (
-              <>
-                {users.map((userItem) => (
-                  <div key={userItem.id} className="user-item">
-                    <Avatar
-                      src={userItem.photo_url}
-                      name={userItem.name}
-                      size="medium"
-                      crownIconUrl={userItem.crown_icon_url}
-                      isPremium={userItem.is_premium}
-                    />
-                    
-                    <div className="user-info">
-                      <div className="user-name">
-                        {userItem.name}
-                        {userItem.is_online && (
-                          <span className="online-indicator" title="В сети"></span>
-                        )}
-                      </div>
-                      {userItem.username && (
-                        <div className="user-username">@{userItem.username}</div>
-                      )}
-                      <div className="user-stats">
-                        {userItem.followers_count} подписчиков
-                      </div>
-                    </div>
-
-                    <button
-                      className={`follow-button ${following.has(userItem.id) ? 'following' : 'not-following'}`}
-                      onClick={() => handleFollowToggle(userItem.id)}
-                    >
-                      {following.has(userItem.id) ? 'Отписаться' : 'Подписаться'}
-                    </button>
+            {filteredUsers.map((user) => (
+              <div key={user.id} className="user-item">
+                <Avatar src={user.photo_url} size={40} />
+                <div className="user-info">
+                  <div className="user-name">
+                    {user.name}
+                    {user.is_premium && user.crown_icon_url && (
+                      <img src={user.crown_icon_url} alt="Premium" className="crown-icon" />
+                    )}
                   </div>
-                ))}
-
-                {hasMore && (
-                  <button 
-                    className="load-more-button"
-                    onClick={loadMore}
-                    disabled={loading}
-                  >
-                    {loading ? 'Загрузка...' : 'Загрузить еще'}
-                  </button>
-                )}
-              </>
-            ) : (
-              <div className="empty-state">
-                <Icon name="people" />
-                <h3>Никого не найдено</h3>
-                <p>Попробуйте изменить поисковый запрос</p>
+                  {user.username && (
+                    <div className="user-username">@{user.username}</div>
+                  )}
+                  <div className="user-stats">
+                    {user.followers_count} подписчиков
+                  </div>
+                </div>
+                <button
+                  className={`follow-button ${following.has(user.id) ? 'following' : ''}`}
+                  onClick={() => handleFollowToggle(user.id)}
+                >
+                  {following.has(user.id) ? 'Отписаться' : 'Подписаться'}
+                </button>
               </div>
+            ))}
+            
+            {hasMore && (
+              <button 
+                className="load-more-button" 
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+              >
+                {loadingMore ? 'Загрузка...' : 'Загрузить еще'}
+              </button>
             )}
           </div>
         </div>
