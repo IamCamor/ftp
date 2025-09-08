@@ -26,6 +26,10 @@ use App\Http\Controllers\Api\V1\Admin\PointManagementController;
 use App\Http\Controllers\Api\V1\Admin\ReportManagementController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\ReferenceController;
+use App\Http\Controllers\Api\V1\FishSpeciesController;
+use App\Http\Controllers\Api\V1\LandingPageController;
+use App\Http\Controllers\Api\V1\PushNotificationController;
 use App\Http\Controllers\WebhookController;
 
 Route::prefix('v1')->group(function () {
@@ -130,6 +134,15 @@ Route::prefix('v1')->group(function () {
     Route::post('/reports/{report}/review', [ReportManagementController::class, 'review']);
     Route::post('/reports/bulk-review', [ReportManagementController::class, 'bulkReview']);
     Route::get('/reports/statistics', [ReportManagementController::class, 'statistics']);
+    
+    // Landing pages management
+    Route::post('/landing-pages', [LandingPageController::class, 'store']);
+    Route::put('/landing-pages/{landingPage}', [LandingPageController::class, 'update']);
+    Route::delete('/landing-pages/{landingPage}', [LandingPageController::class, 'destroy']);
+    
+    // Push notifications management
+    Route::post('/notifications/send', [PushNotificationController::class, 'send']);
+    Route::get('/notifications/statistics', [PushNotificationController::class, 'statistics']);
   });
 
   // Subscription routes
@@ -151,6 +164,31 @@ Route::prefix('v1')->group(function () {
     Route::post('/payments/process', [PaymentController::class, 'process']);
     Route::post('/payments/{payment}/cancel', [PaymentController::class, 'cancel']);
     Route::post('/payments/{payment}/refund', [PaymentController::class, 'refund']);
+  });
+
+  // Reference routes
+  Route::get('/references', [ReferenceController::class, 'index']);
+  Route::get('/references/search', [ReferenceController::class, 'search']);
+  
+  // Fish species routes
+  Route::get('/fish-species', [FishSpeciesController::class, 'index']);
+  Route::get('/fish-species/popular', [FishSpeciesController::class, 'popular']);
+  Route::get('/fish-species/category/{category}', [FishSpeciesController::class, 'byCategory']);
+  Route::get('/fish-species/protected', [FishSpeciesController::class, 'protected']);
+  Route::get('/fish-species/search', [FishSpeciesController::class, 'search']);
+  Route::get('/fish-species/{fishSpecies}', [FishSpeciesController::class, 'show']);
+
+  // Landing pages routes
+  Route::get('/landing-pages', [LandingPageController::class, 'index']);
+  Route::get('/landing-pages/featured', [LandingPageController::class, 'featured']);
+  Route::get('/landing-pages/search', [LandingPageController::class, 'search']);
+  Route::get('/landing-pages/{landingPage}', [LandingPageController::class, 'show']);
+
+  // Push notification routes
+  Route::middleware('auth:api')->group(function () {
+    Route::get('/notifications', [PushNotificationController::class, 'index']);
+    Route::post('/notifications/register-token', [PushNotificationController::class, 'registerToken']);
+    Route::post('/notifications/unregister-token', [PushNotificationController::class, 'unregisterToken']);
   });
 });
 

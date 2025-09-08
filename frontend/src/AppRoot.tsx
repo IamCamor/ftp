@@ -15,6 +15,8 @@ import RegisterPage from './pages/Auth/RegisterPage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import UserManagement from './pages/Admin/UserManagement';
 import SubscriptionPage from './pages/SubscriptionPage';
+import ReferencePage from './pages/ReferencePage';
+import ReferenceItemPage from './pages/ReferenceItemPage';
 import { isAuthed, profileMe } from './api';
 import config from './config';
 
@@ -114,6 +116,18 @@ const AppRoot: React.FC = () => {
                   <SubscriptionPage />
                 </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/reference" 
+              element={<ReferencePage />} 
+            />
+            <Route 
+              path="/reference/:type" 
+              element={<ReferencePage />} 
+            />
+            <Route 
+              path="/reference/:type/:slug" 
+              element={<ReferenceItemPage />} 
             />
             <Route path={config.routes.auth.login} element={<LoginPage />} />
             <Route path={config.routes.auth.register} element={<RegisterPage />} />

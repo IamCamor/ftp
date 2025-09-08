@@ -10,6 +10,7 @@ const BottomNav: React.FC = () => {
   const navItems = [
     { path: config.routes.feed, icon: 'home', label: 'Лента' },
     { path: config.routes.map, icon: 'map', label: 'Карта' },
+    { path: '/reference', icon: 'menu_book', label: 'Справочники' },
     { path: '/groups', icon: 'group', label: 'Группы' },
     { path: '/events', icon: 'event', label: 'События' },
     { path: '/live', icon: 'videocam', label: 'Live' },
