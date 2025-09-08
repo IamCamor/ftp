@@ -49,8 +49,8 @@ class OAuthController extends Controller
                     'user_id' => $user->id,
                     'provider' => $provider,
                     'provider_user_id' => $socialUser->getId(),
-                    'access_token' => $socialUser->token,
-                    'refresh_token' => $socialUser->refreshToken,
+                    'access_token' => $socialUser->token ?? null,
+                    'refresh_token' => $socialUser->refreshToken ?? null,
                 ]);
             }
 
