@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\Admin\UserManagementController;
 use App\Http\Controllers\Api\V1\Admin\CatchManagementController;
 use App\Http\Controllers\Api\V1\Admin\PointManagementController;
 use App\Http\Controllers\Api\V1\Admin\ReportManagementController;
+use App\Http\Controllers\WebhookController;
 
 Route::prefix('v1')->group(function () {
     // Auth
@@ -129,3 +130,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/reports/statistics', [ReportManagementController::class, 'statistics']);
   });
 });
+
+// Webhook routes (no authentication required)
+Route::post('/webhook/github', [WebhookController::class, 'github']);
+Route::get('/health', [WebhookController::class, 'health']);

@@ -1,0 +1,50 @@
+name: Webhook Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Trigger Webhook Deployment
+      run: |
+        curl -X POST \
+          -H "Content-Type: application/json" \
+          -H "X-GitHub-Event: push" \
+          -H "X-Hub-Signature-256: sha256=$(echo -n '${{ toJson(github.event) }}' | openssl dgst -sha256 -hmac '${{ secrets.GITHUB_WEBHOOK_SECRET }}' | cut -d' ' -f2)" \
+          -d '${{ toJson(github.event) }}' \
+          ${{ secrets.WEBHOOK_URL }}/api/webhook/github
+
+    - name: Wait for Deployment
+      run: |
+        echo "Waiting for deployment to complete..."
+        sleep 30
+        
+        # Check if deployment was successful
+        for i in {1..10}; do
+          if curl -f -s ${{ secrets.WEBHOOK_URL }}/health > /dev/null; then
+            echo "✅ Deployment successful! Application is healthy."
+            exit 0
+          fi
+          echo "⏳ Waiting for deployment... (attempt $i/10)"
+          sleep 10
+        done
+        
+        echo "❌ Deployment failed or timed out"
+        exit 1
+
+    - name: Notify Deployment Status
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+      if: always()
