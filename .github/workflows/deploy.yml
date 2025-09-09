@@ -145,9 +145,27 @@ jobs:
           sudo systemctl restart php8.2-fpm
 
     - name: Notify Deployment
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        channel: '#deployments'
-        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          STATUS="✅ Success"
+        else
+          STATUS="❌ Failed"
+        fi
+        
+        MESSAGE="🚀 *Deployment Update*
+
+Repository: ${{ github.repository }}
+Branch: ${{ github.ref_name }}
+Commit: ${{ github.event.head_commit.message }}
+Author: ${{ github.event.head_commit.author.name }}
+Status: $STATUS
+Time: $(date '+%Y-%m-%d %H:%M:%S')"
+        
+        curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"chat_id\": \"${{ secrets.TELEGRAM_CHAT_ID }}\",
+            \"text\": \"$MESSAGE\",
+            \"parse_mode\": \"Markdown\"
+          }"
       if: always()
