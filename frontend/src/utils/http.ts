@@ -1,5 +1,12 @@
 import appConfig from '../config';
 
+// Define types for fetch API
+interface RequestInit {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string;
+}
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   data?: any;
@@ -25,7 +32,7 @@ export async function request(path: string, options: RequestOptions = {}) {
     }
   }
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 

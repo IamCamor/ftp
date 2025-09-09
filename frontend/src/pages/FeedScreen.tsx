@@ -21,7 +21,7 @@ const FeedScreen: React.FC = () => {
 
   useEffect(() => {
     loadFeed();
-    getUserLocation();
+    // getUserLocation(); // Removed automatic location request to comply with browser policy
   }, [activeFilter]);
 
   const getUserLocation = () => {
@@ -129,11 +129,23 @@ const FeedScreen: React.FC = () => {
     <div className="screen">
       <BannerSlot slot="feed_top" className="feed-banner" />
       
-      <FeedFilters 
-        activeFilter={activeFilter}
-        onFilterChange={handleFilterChange}
-        className="feed-filters"
-      />
+      <div className="feed-controls">
+        <FeedFilters 
+          activeFilter={activeFilter}
+          onFilterChange={handleFilterChange}
+          className="feed-filters"
+        />
+        {activeFilter === 'nearby' && !userLocation && (
+          <button 
+            onClick={getUserLocation}
+            className="btn btn-outline btn-sm location-btn"
+            title="Разрешить доступ к геолокации для показа ближайших уловов"
+          >
+            <Icon name="location_on" size={16} />
+            Показать рядом
+          </button>
+        )}
+      </div>
       
       <div className="feed">
         {catches.map((catchRecord) => (

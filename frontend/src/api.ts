@@ -10,7 +10,7 @@ import type {
   Banner,
   Rating,
   Bonus,
-  Notification,
+  AppNotification,
   AddCatchRequest,
   AddPointRequest,
   AddCommentRequest,
@@ -114,7 +114,7 @@ export async function getBonuses(): Promise<Bonus[]> {
 }
 
 // Notifications
-export async function notificationsList(limit = 20, offset = 0): Promise<Notification[]> {
+export async function notificationsList(limit = 20, offset = 0): Promise<AppNotification[]> {
   return request(`/notifications?limit=${limit}&offset=${offset}`, { auth: true });
 }
 

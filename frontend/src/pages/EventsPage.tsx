@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { events } from '../api';
-import type { Event } from '../types';
+import type { AppEvent } from '../types';
 
 const EventsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [eventsList, setEventsList] = useState<Event[]>([]);
+  const [eventsList, setEventsList] = useState<AppEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

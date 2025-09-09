@@ -130,7 +130,7 @@ export interface Bonus {
   created_at: string;
 }
 
-export interface Notification {
+export interface AppNotification {
   id: number;
   type: string;
   title: string;
@@ -217,7 +217,7 @@ export interface Group {
   created_at: string;
 }
 
-export interface Event {
+export interface AppEvent {
   id: number;
   title: string;
   description?: string;

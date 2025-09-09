@@ -3395,3 +3395,37 @@ body {
     padding: 12px 16px;
   }
 }
+
+/* Feed controls */
+.feed-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.location-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+.location-btn .icon {
+  opacity: 0.8;
+}
+
+@media (max-width: 480px) {
+  .feed-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .location-btn {
+    justify-content: center;
+  }
+}

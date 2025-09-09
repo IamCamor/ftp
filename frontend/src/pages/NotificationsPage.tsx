@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../components/Icon';
 import { notificationsList, notificationRead } from '../api';
-import type { Notification } from '../types';
+import type { AppNotification } from '../types';
 
 const NotificationsPage: React.FC = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
