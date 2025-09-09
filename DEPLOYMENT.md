@@ -2,6 +2,18 @@
 
 ## 🔧 Исправление ошибки "This script should not be run as root"
 
+### 🚀 Быстрая установка на сервере
+
+```bash
+# Клонировать репозиторий
+git clone <repository-url>
+cd fishtrackpro
+
+# Запустить автоматическую установку
+chmod +x setup-production.sh
+./setup-production.sh
+```
+
 ### Вариант 1: Локальная разработка
 
 ```bash
@@ -88,6 +100,37 @@ docker-compose logs -f
 2. **Создайте пользователя**: `adduser fishtrackpro`
 3. **Используйте Docker**: `docker-compose up`
 4. **Установите .npmrc**: файл уже создан с `unsafe-perm=true`
+
+### Ошибка "Failed to open stream: vendor/autoload.php"
+
+```bash
+# Установить зависимости Composer
+cd backend
+composer install --no-dev --optimize-autoloader
+
+# Сгенерировать ключи
+php artisan key:generate
+php artisan jwt:secret
+
+# Запустить миграции
+php artisan migrate
+```
+
+### Ошибка "duplicate column name" в миграциях
+
+```bash
+# Проверить статус миграций
+php artisan migrate:status
+
+# Откатить проблемную миграцию
+php artisan migrate:rollback --step=1
+
+# Удалить проблемную миграцию
+rm database/migrations/2025_09_09_100658_add_events_features_to_events_table.php
+
+# Запустить миграции снова
+php artisan migrate
+```
 
 ### Ошибка подключения к API
 
