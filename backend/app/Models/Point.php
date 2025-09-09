@@ -26,6 +26,10 @@ class Point extends Model
         'is_edited_by_admin',
         'edited_by_admin_at',
         'edited_by_admin_id',
+        'moderation_status',
+        'moderation_result',
+        'moderated_at',
+        'moderated_by',
     ];
 
     protected $casts = [
@@ -37,6 +41,8 @@ class Point extends Model
         'is_edited_by_admin' => 'boolean',
         'blocked_at' => 'datetime',
         'edited_by_admin_at' => 'datetime',
+        'moderated_at' => 'datetime',
+        'moderation_result' => 'array',
     ];
 
     public function user()

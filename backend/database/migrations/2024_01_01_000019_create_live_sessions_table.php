@@ -26,7 +26,7 @@ return new class extends Migration
             $table->index('user_id');
             $table->index('event_id');
             $table->index('status');
-            $table->spatialIndex(['lat', 'lng']);
+            $table->index(['lat', 'lng']); // Regular index instead of spatial for SQLite compatibility
         });
     }
 

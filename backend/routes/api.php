@@ -32,7 +32,16 @@ use App\Http\Controllers\Api\V1\LandingPageController;
 use App\Http\Controllers\Api\V1\PushNotificationController;
 use App\Http\Controllers\Api\V1\FollowController;
 use App\Http\Controllers\Api\V1\OnlineStatusController;
+use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\BonusController;
+use App\Http\Controllers\Api\V1\LanguageController;
+use App\Http\Controllers\Api\V1\ModerationController;
+use App\Http\Controllers\Api\V1\WatchController;
+use App\Http\Controllers\Api\V1\EventController;
+use App\Http\Controllers\Api\V1\EventSubscriptionController;
+use App\Http\Controllers\Api\V1\EventNewsController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\TelegramController;
 
 Route::prefix('v1')->group(function () {
     // Auth
@@ -40,6 +49,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:api');
     Route::get('/profile/me', [ProfileController::class, 'me'])->middleware('auth:api');
+
+    // Users
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{user}', [UserController::class, 'show']);
 
     // OAuth
     Route::get('/auth/{provider}/redirect', [OAuthController::class, 'redirect']);
@@ -189,6 +202,15 @@ Route::prefix('v1')->group(function () {
   Route::get('/landing-pages/search', [LandingPageController::class, 'search']);
   Route::get('/landing-pages/{landingPage}', [LandingPageController::class, 'show']);
 
+  // Language routes
+  Route::get('/languages', [LanguageController::class, 'index']);
+  Route::get('/languages/by-region', [LanguageController::class, 'byRegion']);
+  Route::get('/languages/switcher', [LanguageController::class, 'switcher']);
+  Route::get('/languages/current', [LanguageController::class, 'current']);
+  Route::get('/languages/detect', [LanguageController::class, 'detect']);
+  Route::get('/languages/rtl', [LanguageController::class, 'rtl']);
+  Route::get('/languages/config', [LanguageController::class, 'config']);
+
   // Push notification routes
   Route::middleware('auth:api')->group(function () {
     Route::get('/notifications', [PushNotificationController::class, 'index']);
@@ -216,9 +238,102 @@ Route::prefix('v1')->group(function () {
     Route::get('/online/users', [OnlineStatusController::class, 'online']);
     Route::get('/online/recently-active', [OnlineStatusController::class, 'recentlyActive']);
     Route::get('/online/count', [OnlineStatusController::class, 'count']);
+
+    // Bonus system
+    Route::prefix('bonus')->group(function () {
+      Route::get('/', [BonusController::class, 'index']);
+      Route::get('/transactions', [BonusController::class, 'transactions']);
+      Route::get('/amounts', [BonusController::class, 'amounts']);
+      Route::get('/statistics', [BonusController::class, 'statistics']);
+      Route::get('/leaderboard', [BonusController::class, 'leaderboard']);
+      Route::post('/spend', [BonusController::class, 'spend']);
+    });
+
+    // Language management (authenticated users)
+    Route::post('/languages/set', [LanguageController::class, 'set']);
+    Route::get('/languages/user-preference', [LanguageController::class, 'userPreference']);
+
+    // Moderation (authenticated users)
+    Route::post('/moderation/moderate-text', [ModerationController::class, 'moderateText']);
+    Route::post('/moderation/moderate-image', [ModerationController::class, 'moderateImage']);
+    Route::post('/moderation/request', [ModerationController::class, 'requestModeration']);
+
+    // Smart Watch API (authenticated users)
+    Route::post('/watch/start-session', [WatchController::class, 'startSession']);
+    Route::post('/watch/record-biometric', [WatchController::class, 'recordBiometricData']);
+    Route::post('/watch/record-catch', [WatchController::class, 'recordCatch']);
+    Route::get('/watch/session-status', [WatchController::class, 'getSessionStatus']);
+    Route::get('/watch/biometric-stats', [WatchController::class, 'getUserBiometricStats']);
+
+    // Events API (authenticated users)
+    Route::get('/events', [EventController::class, 'index']);
+    Route::get('/events/nearby', [EventController::class, 'nearby']);
+    Route::get('/events/{id}', [EventController::class, 'show']);
+    Route::post('/events', [EventController::class, 'store']);
+    Route::put('/events/{id}', [EventController::class, 'update']);
+    Route::delete('/events/{id}', [EventController::class, 'destroy']);
+
+    // Event Subscriptions API (authenticated users)
+    Route::get('/events/subscriptions/my', [EventSubscriptionController::class, 'mySubscriptions']);
+    Route::post('/events/{eventId}/subscribe', [EventSubscriptionController::class, 'subscribe']);
+    Route::post('/events/{eventId}/unsubscribe', [EventSubscriptionController::class, 'unsubscribe']);
+    Route::post('/events/{eventId}/hide', [EventSubscriptionController::class, 'hide']);
+    Route::post('/events/{eventId}/unhide', [EventSubscriptionController::class, 'unhide']);
+    Route::put('/events/{eventId}/subscription/settings', [EventSubscriptionController::class, 'updateSettings']);
+    Route::post('/events/{eventId}/attendance/confirm', [EventSubscriptionController::class, 'confirmAttendance']);
+    Route::post('/events/{eventId}/attendance/cancel', [EventSubscriptionController::class, 'cancelAttendance']);
+
+    // Event News API (authenticated users)
+    Route::get('/events/{eventId}/news', [EventNewsController::class, 'index']);
+    Route::get('/events/{eventId}/news/{newsId}', [EventNewsController::class, 'show']);
+    Route::post('/events/{eventId}/news', [EventNewsController::class, 'store']);
+    Route::put('/events/{eventId}/news/{newsId}', [EventNewsController::class, 'update']);
+    Route::delete('/events/{eventId}/news/{newsId}', [EventNewsController::class, 'destroy']);
+    Route::post('/events/{eventId}/news/{newsId}/pin', [EventNewsController::class, 'pin']);
+    Route::post('/events/{eventId}/news/{newsId}/unpin', [EventNewsController::class, 'unpin']);
   });
 });
 
 // Webhook routes (no authentication required)
 Route::post('/webhook/github', [WebhookController::class, 'github']);
 Route::get('/health', [WebhookController::class, 'health']);
+
+// Admin routes
+Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
+  // Admin bonus management
+  Route::get('/bonus/global-stats', [BonusController::class, 'globalStats']);
+  Route::post('/bonus/award', [BonusController::class, 'award']);
+
+  // Admin language management
+  Route::get('/languages/statistics', [LanguageController::class, 'statistics']);
+  Route::post('/languages/clear-cache', [LanguageController::class, 'clearCache']);
+
+  // Admin moderation management
+  Route::get('/moderation/statistics', [ModerationController::class, 'statistics']);
+  Route::get('/moderation/pending', [ModerationController::class, 'pending']);
+  Route::post('/moderation/approve', [ModerationController::class, 'approve']);
+  Route::post('/moderation/reject', [ModerationController::class, 'reject']);
+  Route::post('/moderation/clear-cache', [ModerationController::class, 'clearCache']);
+  Route::get('/moderation/config', [ModerationController::class, 'config']);
+  Route::post('/moderation/test-provider', [ModerationController::class, 'testProvider']);
+
+  // Admin events management
+  Route::get('/events/statistics', [EventController::class, 'adminStatistics']);
+  Route::get('/events/pending', [EventController::class, 'adminPending']);
+  Route::post('/events/{id}/approve', [EventController::class, 'adminApprove']);
+  Route::post('/events/{id}/reject', [EventController::class, 'adminReject']);
+  Route::get('/events/{id}/subscriptions', [EventController::class, 'adminSubscriptions']);
+  Route::get('/events/{id}/news', [EventController::class, 'adminNews']);
+
+  // Admin event news management
+  Route::get('/events/{eventId}/news/pending', [EventNewsController::class, 'adminPending']);
+  Route::post('/events/{eventId}/news/{newsId}/approve', [EventNewsController::class, 'adminApprove']);
+  Route::post('/events/{eventId}/news/{newsId}/reject', [EventNewsController::class, 'adminReject']);
+});
+
+// Telegram routes
+Route::post('/telegram/webhook', [TelegramController::class, 'webhook']);
+Route::post('/telegram/set-webhook', [TelegramController::class, 'setWebhook']);
+Route::get('/telegram/webhook-info', [TelegramController::class, 'getWebhookInfo']);
+Route::delete('/telegram/webhook', [TelegramController::class, 'deleteWebhook']);
+Route::post('/telegram/test', [TelegramController::class, 'testNotification']);

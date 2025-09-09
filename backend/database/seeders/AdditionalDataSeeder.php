@@ -19,19 +19,20 @@ class AdditionalDataSeeder extends Seeder
         
         // Создаем лайки для уловов
         foreach ($catches as $catch) {
-            $likesCount = rand(0, 15);
-            $usersWhoLiked = $users->random($likesCount);
-            
-            foreach ($usersWhoLiked as $user) {
-                CatchLike::create([
-                    'user_id' => $user->id,
-                    'catch_id' => $catch->id,
-                    'created_at' => $catch->created_at->addMinutes(rand(1, 60)),
-                ]);
+            $likesCount = min(rand(0, 5), $users->count());
+            if ($likesCount > 0) {
+                $usersWhoLiked = $users->random($likesCount);
+                
+                foreach ($usersWhoLiked as $user) {
+                    CatchLike::create([
+                        'user_id' => $user->id,
+                        'catch_id' => $catch->id,
+                        'created_at' => $catch->created_at->addMinutes(rand(1, 60)),
+                    ]);
+                }
             }
             
-            // Обновляем счетчик лайков
-            $catch->update(['likes_count' => $likesCount]);
+            // Счетчик лайков будет вычисляться динамически
         }
         
         // Создаем комментарии к уловам
@@ -54,20 +55,21 @@ class AdditionalDataSeeder extends Seeder
         ];
         
         foreach ($catches as $catch) {
-            $commentsCount = rand(0, 8);
-            $usersWhoCommented = $users->random($commentsCount);
-            
-            foreach ($usersWhoCommented as $user) {
+            $commentsCount = min(rand(0, 3), $users->count());
+            if ($commentsCount > 0) {
+                $usersWhoCommented = $users->random($commentsCount);
+                
+                foreach ($usersWhoCommented as $user) {
                 CatchComment::create([
                     'user_id' => $user->id,
                     'catch_id' => $catch->id,
-                    'content' => $comments[array_rand($comments)],
+                    'body' => $comments[array_rand($comments)],
                     'created_at' => $catch->created_at->addMinutes(rand(1, 120)),
                 ]);
+                }
             }
             
-            // Обновляем счетчик комментариев
-            $catch->update(['comments_count' => $commentsCount]);
+            // Счетчик комментариев будет вычисляться динамически
         }
         
         // Создаем уведомления
@@ -76,24 +78,21 @@ class AdditionalDataSeeder extends Seeder
                 'user_id' => $users->where('username', 'alex_fisher')->first()->id,
                 'type' => 'like',
                 'title' => 'Новый лайк',
-                'message' => 'Ваш улов понравился пользователю Мария Удачливая',
-                'data' => json_encode(['catch_id' => $catches->random()->id]),
+                'body' => 'Ваш улов понравился пользователю Мария Удачливая',
                 'is_read' => false,
             ],
             [
                 'user_id' => $users->where('username', 'maria_lucky')->first()->id,
                 'type' => 'comment',
                 'title' => 'Новый комментарий',
-                'message' => 'Дмитрий Спиннингист прокомментировал ваш улов',
-                'data' => json_encode(['catch_id' => $catches->random()->id]),
+                'body' => 'Дмитрий Спиннингист прокомментировал ваш улов',
                 'is_read' => false,
             ],
             [
                 'user_id' => $users->where('username', 'dmitry_spinner')->first()->id,
                 'type' => 'event',
                 'title' => 'Новое событие',
-                'message' => 'Создано новое событие "Выезд на Волгу за сомом"',
-                'data' => json_encode(['event_id' => 1]),
+                'body' => 'Создано новое событие "Спиннинговая рыбалка на Оке"',
                 'is_read' => true,
                 'read_at' => \Carbon\Carbon::now()->subHours(2),
             ],
@@ -101,41 +100,14 @@ class AdditionalDataSeeder extends Seeder
                 'user_id' => $users->where('username', 'anna_carp')->first()->id,
                 'type' => 'group',
                 'title' => 'Приглашение в группу',
-                'message' => 'Вас пригласили в группу "Карповая Рыбалка"',
-                'data' => json_encode(['group_id' => 3]),
+                'body' => 'Вас пригласили в группу "Карповая Рыбалка"',
                 'is_read' => false,
             ],
             [
-                'user_id' => $users->where('username', 'sergey_pike')->first()->id,
+                'user_id' => $users->where('username', 'admin')->first()->id,
                 'type' => 'achievement',
                 'title' => 'Новое достижение',
-                'message' => 'Поздравляем! Вы получили достижение "Рекордсмен"',
-                'data' => json_encode(['achievement' => 'record_breaker']),
-                'is_read' => false,
-            ],
-            [
-                'user_id' => $users->where('username', 'elena_perch')->first()->id,
-                'type' => 'bonus',
-                'title' => 'Бонус начислен',
-                'message' => 'Вам начислено 100 бонусов за активность',
-                'data' => json_encode(['bonus_amount' => 100]),
-                'is_read' => true,
-                'read_at' => \Carbon\Carbon::now()->subHours(5),
-            ],
-            [
-                'user_id' => $users->where('username', 'ivan_catfish')->first()->id,
-                'type' => 'weather',
-                'title' => 'Прогноз погоды',
-                'message' => 'На вашем избранном месте ожидается хорошая погода для рыбалки',
-                'data' => json_encode(['point_id' => 4]),
-                'is_read' => false,
-            ],
-            [
-                'user_id' => $users->where('username', 'olga_trout')->first()->id,
-                'type' => 'live',
-                'title' => 'Началась трансляция',
-                'message' => 'Александр Рыболов начал live-трансляцию рыбалки',
-                'data' => json_encode(['live_session_id' => 1]),
+                'body' => 'Поздравляем! Вы получили достижение "Рекордсмен"',
                 'is_read' => false,
             ],
         ];
@@ -162,7 +134,7 @@ class AdditionalDataSeeder extends Seeder
                     'live' => 'Live-трансляция',
                 ];
                 
-                $messages = [
+                $bodies = [
                     'like' => 'Ваш улов понравился пользователю',
                     'comment' => 'Новый комментарий к вашему улову',
                     'event' => 'Создано новое событие в вашей группе',
@@ -177,8 +149,7 @@ class AdditionalDataSeeder extends Seeder
                     'user_id' => $user->id,
                     'type' => $type,
                     'title' => $titles[$type],
-                    'message' => $messages[$type],
-                    'data' => json_encode([]),
+                    'body' => $bodies[$type],
                     'is_read' => rand(0, 1),
                     'created_at' => \Carbon\Carbon::now()->subDays(rand(0, 7))->subHours(rand(0, 23)),
                     'read_at' => rand(0, 1) ? \Carbon\Carbon::now()->subDays(rand(0, 6))->subHours(rand(0, 22)) : null,

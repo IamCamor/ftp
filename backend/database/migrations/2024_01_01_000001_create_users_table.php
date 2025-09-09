@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name', 120);
             $table->string('username', 64)->unique()->nullable();
             $table->string('photo_url', 512)->nullable();
-            $table->enum('role', ['user', 'admin'])->default('user');
+            $table->enum('role', ['user', 'pro', 'premium', 'admin'])->default('user');
             $table->timestamps();
 
             $table->index('email');

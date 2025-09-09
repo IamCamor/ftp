@@ -182,7 +182,7 @@ class FeedController extends Controller
     /**
      * Transform catch record for API response.
      */
-    private function transformCatch(CatchRecord $catch, User $user): array
+    private function transformCatch(CatchRecord $catch, ?User $user): array
     {
         return [
             'id' => $catch->id,
@@ -234,7 +234,7 @@ class FeedController extends Controller
                 'name' => $catch->fishingLocation->name,
                 'slug' => $catch->fishingLocation->slug,
             ] : null,
-            'liked_by_me' => $catch->likes()->where('user_id', $user->id)->exists(),
+            'liked_by_me' => $user ? $catch->likes()->where('user_id', $user->id)->exists() : false,
             'created_at' => $catch->created_at,
             'updated_at' => $catch->updated_at,
         ];

@@ -26,6 +26,10 @@ class CatchRecord extends Model
         'media_count',
         'caught_at',
         'is_public',
+        'moderation_status',
+        'moderation_result',
+        'moderated_at',
+        'moderated_by',
         'likes_count',
         'comments_count',
         'is_blocked',
@@ -47,6 +51,8 @@ class CatchRecord extends Model
     protected $casts = [
         'caught_at' => 'datetime',
         'blocked_at' => 'datetime',
+        'moderated_at' => 'datetime',
+        'moderation_result' => 'array',
         'edited_by_admin_at' => 'datetime',
         'length' => 'decimal:2',
         'weight' => 'decimal:2',
@@ -66,6 +72,16 @@ class CatchRecord extends Model
     public function point()
     {
         return $this->belongsTo(Point::class);
+    }
+
+    public function fishingSession()
+    {
+        return $this->belongsTo(FishingSession::class);
+    }
+
+    public function biometricData()
+    {
+        return $this->hasMany(BiometricData::class);
     }
 
     public function likes()

@@ -7,9 +7,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Process\Process;
+use App\Services\TelegramService;
 
 class WebhookController extends Controller
 {
+    private TelegramService $telegramService;
+
+    public function __construct(TelegramService $telegramService)
+    {
+        $this->telegramService = $telegramService;
+    }
     /**
      * Handle GitHub webhook for deployment
      */
@@ -35,7 +42,7 @@ class WebhookController extends Controller
         
         // Only deploy on push to main branch
         if ($event === 'push' && ($data['ref'] ?? '') === 'refs/heads/main') {
-            $this->deploy();
+            $this->deploy($data);
         }
         
         return response()->json(['status' => 'success']);
@@ -61,7 +68,7 @@ class WebhookController extends Controller
     /**
      * Deploy the application
      */
-    private function deploy(): void
+    private function deploy(array $data = []): void
     {
         Log::info('Starting deployment...');
         
@@ -89,11 +96,17 @@ class WebhookController extends Controller
             
             Log::info('Deployment completed successfully');
             
+            // Send success notification
+            $this->sendDeploymentNotification($data, 'success');
+            
         } catch (\Exception $e) {
             Log::error('Deployment failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            
+            // Send failure notification
+            $this->sendDeploymentNotification($data, 'failed', $e->getMessage());
             
             throw $e;
         }
@@ -113,6 +126,34 @@ class WebhookController extends Controller
         }
         
         Log::info("Command executed successfully: {$command}");
+    }
+    
+    /**
+     * Send deployment notification
+     */
+    private function sendDeploymentNotification(array $data, string $status, string $error = null): void
+    {
+        try {
+            $repository = $data['repository']['full_name'] ?? 'unknown';
+            $branch = str_replace('refs/heads/', '', $data['ref'] ?? 'unknown');
+            $commitMessage = $data['head_commit']['message'] ?? 'No message';
+            $author = $data['head_commit']['author']['name'] ?? 'Unknown';
+            
+            $notificationData = [
+                '{repository}' => $repository,
+                '{branch}' => $branch,
+                '{commit_message}' => $commitMessage,
+                '{author}' => $author,
+                '{status}' => $status === 'success' ? '✅ Success' : '❌ Failed',
+                '{error}' => $error,
+            ];
+            
+            $this->telegramService->sendDeploymentNotification($notificationData);
+        } catch (\Exception $e) {
+            Log::error('Failed to send deployment notification', [
+                'error' => $e->getMessage()
+            ]);
+        }
     }
     
     /**

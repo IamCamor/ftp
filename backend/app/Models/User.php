@@ -20,6 +20,7 @@ class User extends Authenticatable implements JWTSubject
         'photo_url',
         'phone',
         'role',
+        'language',
         'is_premium',
         'premium_expires_at',
         'crown_icon_url',
@@ -71,6 +72,34 @@ class User extends Authenticatable implements JWTSubject
     public function catchRecords()
     {
         return $this->hasMany(CatchRecord::class);
+    }
+
+    /**
+     * Get the bonus transactions for the user.
+     */
+    public function bonusTransactions()
+    {
+        return $this->hasMany(BonusTransaction::class);
+    }
+
+    public function fishingSessions()
+    {
+        return $this->hasMany(FishingSession::class);
+    }
+
+    public function biometricData()
+    {
+        return $this->hasMany(BiometricData::class);
+    }
+
+    public function eventSubscriptions()
+    {
+        return $this->hasMany(EventSubscription::class);
+    }
+
+    public function eventNews()
+    {
+        return $this->hasMany(EventNews::class);
     }
 
     public function points()

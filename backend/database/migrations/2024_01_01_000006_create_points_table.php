@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('privacy', ['all', 'friends', 'me'])->default('all');
             $table->timestamps();
 
-            $table->spatialIndex(['lat', 'lng']);
+            $table->index(['lat', 'lng']); // Regular index instead of spatial for SQLite compatibility
             $table->index('user_id');
         });
     }

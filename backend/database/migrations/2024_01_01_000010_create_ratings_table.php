@@ -18,7 +18,7 @@ return new class extends Migration
 
             $table->unique(['entity_type', 'entity_id', 'user_id']);
             $table->index(['entity_type', 'entity_id']);
-            $table->check('value >= 1 AND value <= 5');
+            // Note: CHECK constraint removed for SQLite compatibility
         });
     }
 

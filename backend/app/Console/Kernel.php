@@ -12,7 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Send daily statistics to Telegram at 9:00 AM
+        $schedule->command('telegram:daily-stats')
+                 ->dailyAt('09:00')
+                 ->timezone('Europe/Moscow');
     }
 
     /**

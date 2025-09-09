@@ -13,11 +13,17 @@ class CatchComment extends Model
         'catch_id',
         'user_id',
         'body',
+        'moderation_status',
+        'moderation_result',
+        'moderated_at',
+        'moderated_by',
         'is_approved',
     ];
 
     protected $casts = [
         'is_approved' => 'boolean',
+        'moderated_at' => 'datetime',
+        'moderation_result' => 'array',
     ];
 
     public function catchRecord()

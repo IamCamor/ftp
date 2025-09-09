@@ -41,7 +41,7 @@ return new class extends Migration
             $table->index(['water_type', 'is_active']);
             $table->index(['region', 'is_active']);
             $table->index(['slug']);
-            $table->spatialIndex(['latitude', 'longitude']);
+            $table->index(['latitude', 'longitude']); // Regular index instead of spatial for SQLite compatibility
         });
     }
 
