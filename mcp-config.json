@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "puppeteer": {
+      "command": "npx",
+      "args": ["puppeteer-mcp-server"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "hisma-puppeteer": {
+      "command": "npx",
+      "args": ["@hisma/server-puppeteer"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}

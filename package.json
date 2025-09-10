@@ -1,0 +1,36 @@
+{
+  "name": "fishtrackpro-mcp",
+  "version": "1.0.0",
+  "description": "FishTrackPro with MCP Playwright integration",
+  "type": "module",
+  "main": "mcp-client.js",
+  "scripts": {
+    "mcp:test": "node mcp-client.js",
+    "mcp:test:ts": "tsx mcp-client.ts",
+    "mcp:server": "npx puppeteer-mcp-server",
+    "mcp:server:hisma": "npx @hisma/server-puppeteer",
+    "test:automation": "npm run mcp:test",
+    "dev:with-mcp": "concurrently \"npm run dev\" \"npm run mcp:server\"",
+    "build:mcp": "tsc mcp-client.ts --outDir dist --target es2020 --module esnext --moduleResolution node"
+  },
+  "dependencies": {
+    "@hisma/server-puppeteer": "^0.6.5",
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "puppeteer-mcp-server": "^0.7.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.0.2"
+  },
+  "keywords": [
+    "mcp",
+    "playwright",
+    "puppeteer",
+    "automation",
+    "testing",
+    "fishtrackpro"
+  ],
+  "author": "FishTrackPro Team",
+  "license": "MIT"
+}
