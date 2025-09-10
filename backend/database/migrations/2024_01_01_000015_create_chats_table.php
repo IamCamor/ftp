@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('name', 191)->nullable();
             $table->enum('type', ['private', 'group', 'event'])->default('private');
             $table->foreignId('group_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('event_id')->nullable()->constrained('events')->onDelete('cascade');
+            $table->unsignedBigInteger('event_id')->nullable();
             $table->timestamps();
 
             $table->index('type');
