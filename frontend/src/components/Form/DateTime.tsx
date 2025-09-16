@@ -33,7 +33,7 @@ const DateTimeInput: React.FC<DateTimeInputProps> = ({
       
       <div className="input-wrapper">
         <div className="input-icon">
-          <Icon name="schedule" size={20} />
+          <Icon name="schedule" size="md" />
         </div>
         
         <input

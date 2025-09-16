@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест функциональности погоды</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .success { background: #e8f5e8; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #2196f3; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #1976d2; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        input { padding: 8px; margin: 5px; width: 200px; border: 1px solid #ddd; border-radius: 4px; }
+        .status { font-weight: bold; margin: 10px 0; }
+        .loading { color: #ff9800; }
+        .success-text { color: #4caf50; }
+        .error-text { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ Тест функциональности погоды</h1>
+        <p>Этот тест проверяет работу API для сохранения и загрузки избранных мест погоды.</p>
+
+        <div class="test-section">
+            <h3>1. Проверка токена аутентификации</h3>
+            <button onclick="checkToken()">Проверить токен</button>
+            <div id="token-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Загрузка избранных мест</h3>
+            <button onclick="loadWeatherFavs()">Загрузить места</button>
+            <div id="load-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Добавление нового места</h3>
+            <div>
+                <input type="text" id="placeName" placeholder="Название места" value="Тестовое место">
+                <input type="number" id="lat" placeholder="Широта" value="55.7558" step="0.0001">
+                <input type="number" id="lng" placeholder="Долгота" value="37.6176" step="0.0001">
+            </div>
+            <button onclick="addWeatherPlace()">Добавить место</button>
+            <div id="add-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Получение данных о погоде</h3>
+            <div>
+                <input type="number" id="weatherLat" placeholder="Широта" value="55.7558" step="0.0001">
+                <input type="number" id="weatherLng" placeholder="Долгота" value="37.6176" step="0.0001">
+            </div>
+            <button onclick="getWeatherData()">Получить погоду</button>
+            <div id="weather-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Полный тест функциональности</h3>
+            <button onclick="runFullTest()">Запустить полный тест</button>
+            <div id="full-test-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Статус тестирования</h3>
+            <div id="test-status" class="status">Готов к тестированию</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.fishtrackpro.ru/api/v1';
+        let testResults = {
+            token: false,
+            load: false,
+            add: false,
+            weather: false
+        };
+
+        function getToken() {
+            return localStorage.getItem('token') || 'simple_token_1_17578';
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+
+        function updateStatus(message, type = 'info') {
+            const element = document.getElementById('test-status');
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        async function checkToken() {
+            updateStatus('Проверяем токен...', 'loading');
+            
+            const token = getToken();
+            if (token) {
+                showResult('token-result', `✅ Токен найден: ${token.substring(0, 20)}...`, 'success');
+                testResults.token = true;
+                updateStatus('Токен найден', 'success-text');
+            } else {
+                showResult('token-result', '❌ Токен не найден', 'error');
+                testResults.token = false;
+                updateStatus('Токен не найден', 'error-text');
+            }
+        }
+
+        async function loadWeatherFavs() {
+            updateStatus('Загружаем избранные места...', 'loading');
+            
+            try {
+                const token = getToken();
+                if (!token) {
+                    showResult('load-result', '❌ Токен не найден', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/weather/favs`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('load-result', `✅ Загружено мест: ${data.length}\nДанные: ${JSON.stringify(data, null, 2)}`, 'success');
+                    testResults.load = true;
+                    updateStatus(`Загружено ${data.length} мест`, 'success-text');
+                } else {
+                    showResult('load-result', `❌ Ошибка сервера: ${response.status}\n${JSON.stringify(data, null, 2)}`, 'error');
+                    testResults.load = false;
+                }
+            } catch (error) {
+                showResult('load-result', `❌ Ошибка: ${error.message}`, 'error');
+                testResults.load = false;
+                updateStatus('Ошибка загрузки', 'error-text');
+            }
+        }
+
+        async function addWeatherPlace() {
+            updateStatus('Добавляем место...', 'loading');
+            
+            try {
+                const token = getToken();
+                if (!token) {
+                    showResult('add-result', '❌ Токен не найден', 'error');
+                    return;
+                }
+
+                const placeName = document.getElementById('placeName').value;
+                const lat = parseFloat(document.getElementById('lat').value);
+                const lng = parseFloat(document.getElementById('lng').value);
+
+                if (!placeName || isNaN(lat) || isNaN(lng)) {
+                    showResult('add-result', '❌ Заполните все поля корректно', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/weather/favs`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        lat: lat,
+                        lng: lng,
+                        label: placeName
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('add-result', `✅ Место добавлено!\nОтвет: ${JSON.stringify(data, null, 2)}`, 'success');
+                    testResults.add = true;
+                    updateStatus('Место добавлено', 'success-text');
+                } else {
+                    showResult('add-result', `❌ Ошибка сервера: ${response.status}\n${JSON.stringify(data, null, 2)}`, 'error');
+                    testResults.add = false;
+                }
+            } catch (error) {
+                showResult('add-result', `❌ Ошибка: ${error.message}`, 'error');
+                testResults.add = false;
+                updateStatus('Ошибка добавления', 'error-text');
+            }
+        }
+
+        async function getWeatherData() {
+            updateStatus('Получаем данные о погоде...', 'loading');
+            
+            try {
+                const token = getToken();
+                if (!token) {
+                    showResult('weather-result', '❌ Токен не найден', 'error');
+                    return;
+                }
+
+                const lat = parseFloat(document.getElementById('weatherLat').value);
+                const lng = parseFloat(document.getElementById('weatherLng').value);
+
+                if (isNaN(lat) || isNaN(lng)) {
+                    showResult('weather-result', '❌ Введите корректные координаты', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/weather?lat=${lat}&lng=${lng}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('weather-result', `✅ Данные о погоде получены!\n${JSON.stringify(data, null, 2)}`, 'success');
+                    testResults.weather = true;
+                    updateStatus('Данные о погоде получены', 'success-text');
+                } else {
+                    showResult('weather-result', `❌ Ошибка сервера: ${response.status}\n${JSON.stringify(data, null, 2)}`, 'error');
+                    testResults.weather = false;
+                }
+            } catch (error) {
+                showResult('weather-result', `❌ Ошибка: ${error.message}`, 'error');
+                testResults.weather = false;
+                updateStatus('Ошибка получения погоды', 'error-text');
+            }
+        }
+
+        async function runFullTest() {
+            updateStatus('Запускаем полный тест...', 'loading');
+            
+            // Сбрасываем результаты
+            testResults = { token: false, load: false, add: false, weather: false };
+            
+            // Выполняем все тесты последовательно
+            await checkToken();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await loadWeatherFavs();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await addWeatherPlace();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await getWeatherData();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Проверяем, сохранилось ли место
+            await loadWeatherFavs();
+            
+            // Подводим итоги
+            const passedTests = Object.values(testResults).filter(Boolean).length;
+            const totalTests = Object.keys(testResults).length;
+            
+            let summary = `Тест завершен: ${passedTests}/${totalTests} тестов пройдено\n\n`;
+            summary += `Токен: ${testResults.token ? '✅' : '❌'}\n`;
+            summary += `Загрузка: ${testResults.load ? '✅' : '❌'}\n`;
+            summary += `Добавление: ${testResults.add ? '✅' : '❌'}\n`;
+            summary += `Погода: ${testResults.weather ? '✅' : '❌'}\n\n`;
+            
+            if (passedTests === totalTests) {
+                summary += '🎉 Все тесты пройдены успешно!';
+                updateStatus('Все тесты пройдены', 'success-text');
+            } else {
+                summary += '⚠️ Некоторые тесты не пройдены. Проверьте логи выше.';
+                updateStatus('Некоторые тесты не пройдены', 'error-text');
+            }
+            
+            showResult('full-test-result', summary, passedTests === totalTests ? 'success' : 'error');
+        }
+
+        // Автоматически проверяем токен при загрузке
+        window.onload = function() {
+            checkToken();
+        };
+    </script>
+</body>
+</html>
+

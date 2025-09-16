@@ -18,6 +18,8 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'username',
         'photo_url',
+        'avatar_path',
+        'handle',
         'phone',
         'role',
         'language',
@@ -35,6 +37,9 @@ class User extends Authenticatable implements JWTSubject
         'blocked_at',
         'block_reason',
         'blocked_by',
+        'bio',
+        'location',
+        'website',
     ];
 
     protected $hidden = [

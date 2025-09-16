@@ -43,7 +43,7 @@ const Select: React.FC<SelectProps> = ({
       <div className="input-wrapper">
         {icon && (
           <div className="input-icon">
-            <Icon name={icon} size={20} />
+            <Icon name={icon} size="md" />
           </div>
         )}
         
@@ -63,7 +63,7 @@ const Select: React.FC<SelectProps> = ({
         </select>
         
         <div className="select-arrow">
-          <Icon name="keyboard_arrow_down" size={20} />
+          <Icon name="keyboard_arrow_down" size="md" />
         </div>
       </div>
       

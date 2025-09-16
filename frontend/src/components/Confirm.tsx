@@ -39,7 +39,7 @@ const Confirm: React.FC<ConfirmProps> = ({
     <div className="modal-overlay">
       <div className="confirm-modal glass">
         <div className="confirm-header">
-          <Icon name={getIcon()} size={24} />
+          <Icon name={getIcon()} size="md" />
           <h3>{title}</h3>
         </div>
         

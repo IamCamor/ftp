@@ -145,7 +145,7 @@ async function main() {
     console.log('\n🎣 Testing FishTrackPro with MCP Playwright...\n');
     
     // Переходим на главную страницу
-    await mcpClient.navigateToUrl('http://localhost:5173');
+    await mcpClient.navigateToUrl('https://fishtrackpro.ru');
     await new Promise(resolve => setTimeout(resolve, 2000)); // Ждем загрузки
     
     // Делаем скриншот

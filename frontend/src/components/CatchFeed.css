@@ -1,0 +1,216 @@
+/* Анимации для ленты уловов */
+
+/* Анимация появления постов */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Анимация лайка */
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Анимация загрузки */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Анимация перехода между табами */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Стили для постов */
+.catch-post {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Анимация лайка */
+.like-animation {
+  animation: heartBeat 0.3s ease-in-out;
+}
+
+/* Анимация загрузки */
+.loading-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Анимация появления контента */
+.content-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Hover эффекты */
+.catch-post:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Стили для кнопок */
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Стили для табов */
+.tab-active {
+  position: relative;
+}
+
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 2px;
+  background: #3b82f6;
+  border-radius: 1px;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Стили для скролла */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Анимация для веса улова */
+.weight-badge {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  transition: all 0.3s ease;
+}
+
+.weight-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+}
+
+/* Стили для дополнительных блоков */
+.special-block {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Градиент для приглашения друзей */
+.invite-gradient {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8, #7c3aed);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Анимация для групп */
+.group-item {
+  transition: all 0.3s ease;
+}
+
+.group-item:hover {
+  transform: translateY(-4px);
+}
+
+/* Стили для погодных блоков */
+.weather-item {
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  transition: all 0.3s ease;
+}
+
+.weather-item:hover {
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  transform: translateY(-2px);
+}
+
+/* Анимация для иконок */
+.icon-bounce {
+  transition: transform 0.2s ease;
+}
+
+.icon-bounce:hover {
+  transform: scale(1.1);
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 640px) {
+  .catch-post {
+    margin-bottom: 12px;
+  }
+  
+  .tab-active::after {
+    width: 20px;
+  }
+}
+
+/* Темная тема (опционально) */
+@media (prefers-color-scheme: dark) {
+  .catch-post {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .catch-post h3 {
+    color: #f9fafb;
+  }
+  
+  .catch-post .text-gray-500 {
+    color: #9ca3af;
+  }
+}

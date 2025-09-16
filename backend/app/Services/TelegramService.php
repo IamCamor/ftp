@@ -44,7 +44,7 @@ class TelegramService
             $response = Http::timeout(10)->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
                 'chat_id' => $chatId,
                 'text' => $message,
-                'parse_mode' => 'Markdown',
+                'parse_mode' => 'HTML',
                 ...$options
             ]);
 
@@ -208,8 +208,12 @@ class TelegramService
         $replacements = [
             '{time}' => now()->format('Y-m-d H:i:s'),
             '{date}' => now()->format('Y-m-d'),
-            ...$data
         ];
+        
+        // Add data with curly braces
+        foreach ($data as $key => $value) {
+            $replacements['{' . $key . '}'] = $value;
+        }
 
         return str_replace(array_keys($replacements), array_values($replacements), $template);
     }
@@ -472,7 +476,7 @@ class TelegramService
 
         $key = 'telegram_rate_limit_' . now()->format('Y-m-d-H-i');
         Cache::increment($key);
-        Cache::expire($key, 60); // Expire after 1 minute
+        Cache::put($key, Cache::get($key, 0), 60); // Expire after 1 minute
     }
 
     /**

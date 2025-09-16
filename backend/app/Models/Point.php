@@ -9,6 +9,8 @@ class Point extends Model
 {
     use HasFactory;
 
+    protected $table = 'fishing_points';
+
     protected $fillable = [
         'user_id',
         'name',
@@ -30,6 +32,7 @@ class Point extends Model
         'moderation_result',
         'moderated_at',
         'moderated_by',
+        'working_hours',
     ];
 
     protected $casts = [
@@ -43,6 +46,7 @@ class Point extends Model
         'edited_by_admin_at' => 'datetime',
         'moderated_at' => 'datetime',
         'moderation_result' => 'array',
+        'working_hours' => 'array',
     ];
 
     public function user()

@@ -17,8 +17,8 @@ class ApiService {
 
   constructor() {
     this.baseURL = __DEV__ 
-      ? 'http://localhost:8000/api/v1' 
-      : 'https://api.fishtrackpro.com/api/v1';
+      ? 'https://api.fishtrackpro.ru/api/v1' 
+      : 'https://api.fishtrackpro.ru/api/v1';
     
     this.api = axios.create({
       baseURL: this.baseURL,

@@ -30,7 +30,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="header-content">
         {showBack && (
           <button className="back-button" onClick={handleBack}>
-            <Icon name="arrow_back" size={24} />
+            <Icon name="arrow_back" size="md" />
           </button>
         )}
         <h1 className="page-title">{title}</h1>

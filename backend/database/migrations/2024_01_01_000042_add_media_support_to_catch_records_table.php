@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('catch_records', function (Blueprint $table) {
-            $table->json('photos')->nullable()->after('description'); // Массив URL фото
+            $table->json('photos')->nullable()->after('notes'); // Массив URL фото
             $table->json('videos')->nullable()->after('photos'); // Массив URL видео
             $table->string('main_photo')->nullable()->after('videos'); // Главное фото для превью
             $table->string('main_video')->nullable()->after('main_photo'); // Главное видео для превью

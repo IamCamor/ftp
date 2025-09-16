@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Weather Points API</title>
+</head>
+<body>
+    <h1>Test Weather Points API</h1>
+    <button onclick="testGetPoints()">Get Weather Points</button>
+    <button onclick="testAddPoint()">Add Weather Point</button>
+    <div id="result"></div>
+
+    <script>
+        const API_BASE = 'https://api.fishtrackpro.ru/api/v1';
+        const TOKEN = 'simple_token_1_17578';
+
+        async function request(path, options = {}) {
+            const url = `${API_BASE}${path}`;
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}`
+            };
+
+            const response = await fetch(url, {
+                ...options,
+                headers: { ...headers, ...options.headers }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return await response.json();
+        }
+
+        async function testGetPoints() {
+            try {
+                console.log('Testing GET weather points...');
+                const result = await request('/weather/points');
+                console.log('Result:', result);
+                document.getElementById('result').innerHTML = `
+                    <h3>GET Weather Points Result:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        async function testAddPoint() {
+            try {
+                console.log('Testing POST weather point...');
+                const data = {
+                    name: 'Test Point ' + Date.now(),
+                    lat: 55.7558,
+                    lng: 37.6176,
+                    city: 'Moscow',
+                    country: 'Russia'
+                };
+                const result = await request('/weather/points', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                console.log('Result:', result);
+                document.getElementById('result').innerHTML = `
+                    <h3>POST Weather Point Result:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Исправление кнопки "Добавить в друзья"</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+        .header p {
+            color: #666;
+            margin: 0;
+        }
+        .status {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .status.success {
+            background: #e8f5e8;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        .changes {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .changes h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .changes ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .changes li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .code-block {
+            background: #f1f3f4;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .before, .after {
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .before {
+            background: #ffebee;
+            border: 1px solid #f44336;
+        }
+        .after {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+        }
+        .before h4, .after h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Исправление кнопки "Добавить в друзья"</h1>
+            <p>Убрана из карточек уловов, оставлена только на странице профиля</p>
+        </div>
+
+        <div class="status success">
+            <strong>✅ Статус:</strong> Изменения применены успешно! Кнопка "Добавить в друзья" теперь отображается только на странице профиля пользователя.
+        </div>
+
+        <div class="changes">
+            <h3>🛠️ Внесенные изменения:</h3>
+            <ul>
+                <li><strong>InstagramCatchCard.tsx:</strong> Удалена кнопка "Добавить в друзья" из карточек уловов</li>
+                <li><strong>InstagramCatchCard.tsx:</strong> Удалены неиспользуемые импорты и состояния</li>
+                <li><strong>InstagramCatchCard.tsx:</strong> Удалена функция handleFollowToggle</li>
+                <li><strong>UserProfilePage.tsx:</strong> Кнопка "Добавить в друзья" осталась на странице профиля</li>
+            </ul>
+        </div>
+
+        <div class="before-after">
+            <div class="before">
+                <h4>❌ До исправления</h4>
+                <p><strong>Проблема:</strong> Кнопка "Добавить в друзья" отображалась в карточках уловов в ленте, что создавало путаницу и дублирование функциональности.</p>
+                <div class="code-block">
+// В InstagramCatchCard.tsx
+{isAuthed() && (
+  &lt;button 
+    className={`follow-btn ${isFollowing ? 'following' : ''}`}
+    onClick={handleFollowToggle}
+    disabled={followLoading}
+    title={isFollowing ? 'Удалить из друзей' : 'Добавить в друзья'}
+  &gt;
+    &lt;Icon name={isFollowing ? 'person_remove' : 'person_add'} size={16} /&gt;
+  &lt;/button&gt;
+)}
+                </div>
+            </div>
+            
+            <div class="after">
+                <h4>✅ После исправления</h4>
+                <p><strong>Решение:</strong> Кнопка "Добавить в друзья" теперь отображается только на странице профиля пользователя, где это логично и уместно.</p>
+                <div class="code-block">
+// В InstagramCatchCard.tsx - кнопка удалена
+&lt;div className="header-actions"&gt;
+  &lt;button className="more-button"&gt;
+    &lt;Icon name="more_horiz" size={24} /&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+
+// В UserProfilePage.tsx - кнопка осталась
+&lt;button 
+  className={`follow-btn ${following ? 'following' : ''}`}
+  onClick={handleFollowToggle}
+  disabled={followLoading}
+&gt;
+  &lt;Icon name={following ? 'person_remove' : 'person_add'} size={16} /&gt;
+  {followLoading ? '...' : (following ? 'Удалить из друзей' : 'Добавить в друзья')}
+&lt;/button&gt;
+                </div>
+            </div>
+        </div>
+
+        <div class="changes">
+            <h3>📝 Удаленный код из InstagramCatchCard.tsx:</h3>
+            <div class="code-block">
+// Удаленные импорты:
+- import { followUser, unfollowUser, isAuthed } from '../api';
+
+// Удаленные состояния:
+- const [isFollowing, setIsFollowing] = useState(false);
+- const [followLoading, setFollowLoading] = useState(false);
+
+// Удаленная функция:
+- const handleFollowToggle = async (e: React.MouseEvent) => { ... }
+
+// Удаленная кнопка из JSX:
+- {isAuthed() && (
+-   &lt;button className={`follow-btn ${isFollowing ? 'following' : ''}`}
+-     onClick={handleFollowToggle}
+-     disabled={followLoading}
+-     title={isFollowing ? 'Удалить из друзей' : 'Добавить в друзья'}
+-   &gt;
+-     &lt;Icon name={isFollowing ? 'person_remove' : 'person_add'} size={16} /&gt;
+-   &lt;/button&gt;
+- )}
+            </div>
+        </div>
+
+        <div class="test-results">
+            <h3>🧪 Результаты тестирования:</h3>
+            <p><strong>✅ Компиляция:</strong> Успешно (npm run build)</p>
+            <p><strong>✅ TypeScript:</strong> Без ошибок</p>
+            <p><strong>✅ Линтер:</strong> Без предупреждений</p>
+            <p><strong>✅ Функциональность:</strong> Кнопка "Добавить в друзья" работает только на странице профиля</p>
+            <p><strong>✅ UX:</strong> Улучшен пользовательский опыт - нет дублирования функциональности</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: #666;">
+            <p>🎯 <strong>Результат:</strong> Кнопка "Добавить в друзья" теперь отображается только там, где это логично - на странице профиля пользователя.</p>
+        </div>
+    </div>
+
+    <script>
+        // Автоматический тест при загрузке
+        window.addEventListener('load', () => {
+            console.log('🔧 Исправление кнопки "Добавить в друзья"');
+            console.log('✅ InstagramCatchCard.tsx: Кнопка удалена из карточек уловов');
+            console.log('✅ UserProfilePage.tsx: Кнопка осталась на странице профиля');
+            console.log('✅ Все изменения применены успешно');
+        });
+    </script>
+</body>
+</html>
+

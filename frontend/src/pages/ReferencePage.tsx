@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
 import PageHeader from '../components/PageHeader';
 import ReferenceCard from '../components/ReferenceCard';
@@ -26,6 +26,7 @@ interface ReferenceItem {
 const ReferencePage: React.FC = () => {
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [referenceTypes, setReferenceTypes] = useState<ReferenceType[]>([]);
   const [items, setItems] = useState<ReferenceItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,10 +40,25 @@ const ReferencePage: React.FC = () => {
     }
   }, [selectedType]);
 
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+      handleSearch(searchParam);
+    }
+  }, [searchParams]);
+
   const loadReferenceTypes = async () => {
     try {
       const response = await request('/references');
-      setReferenceTypes(response.data);
+      // Convert object to array
+      const typesArray = Object.values(response.data).map((item: any) => ({
+        name: item.name,
+        count: item.count,
+        icon: item.icon,
+        description: item.description
+      }));
+      setReferenceTypes(typesArray);
     } catch (error) {
       console.error('Error loading reference types:', error);
     }
@@ -82,13 +98,18 @@ const ReferencePage: React.FC = () => {
     }
   };
 
+  const handleSearchClick = () => {
+    handleSearch();
+  };
+
   const handleTypeSelect = (referenceType: string) => {
     setSelectedType(referenceType);
     navigate(`/reference/${referenceType}`);
   };
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
+  const handleSearch = async (query?: string) => {
+    const searchTerm = query || searchQuery;
+    if (!searchTerm.trim()) {
       if (selectedType) {
         loadItems(selectedType);
       }
@@ -98,7 +119,7 @@ const ReferencePage: React.FC = () => {
     setLoading(true);
     try {
       const response = await request('/references/search', {
-        params: { query: searchQuery, type: selectedType }
+        params: { query: searchTerm, type: selectedType }
       });
       
       if (selectedType && response.data[selectedType]) {
@@ -168,7 +189,7 @@ const ReferencePage: React.FC = () => {
               className="search-input"
             />
             <button 
-              onClick={handleSearch}
+              onClick={handleSearchClick}
               className="search-button"
             >
               <Icon name="search" />

@@ -1,4 +1,5 @@
 import { request } from './utils/http';
+import { searchReferences, getReferenceSuggestions } from './data/references';
 import type {
   AuthResponse,
   LoginRequest,
@@ -7,13 +8,15 @@ import type {
   CatchComment,
   Point,
   WeatherFav,
+  WeatherPoint,
+  AddWeatherPointRequest,
+  UpdateWeatherPointRequest,
   Banner,
   Rating,
   Bonus,
   AppNotification,
   AddCatchRequest,
   AddPointRequest,
-  AddCommentRequest,
   SaveWeatherFavRequest,
   AddRatingRequest,
   User,
@@ -24,7 +27,33 @@ import type {
   FollowResponse,
   FollowersResponse,
   OnlineStatusResponse,
-  OnlineUsersResponse
+  OnlineUsersResponse,
+  GroupPost,
+  Track,
+  CreateTrackRequest,
+  // Friends System
+  Friendship,
+  FriendRequest,
+  CreateFriendRequestRequest,
+  RespondToFriendRequestRequest,
+  UserReport,
+  CreateUserReportRequest,
+  FishingCompanion,
+  AddFishingCompanionRequest,
+  RespondToFishingCompanionRequest,
+  UpdateTrackRequest,
+  AddCatchToTrackRequest,
+  PromoCode,
+  InviteCode,
+  InviteUsage,
+  AppSettings,
+  CreatePromoCodeRequest,
+  CreateInviteCodeRequest,
+  ApplyPromoCodeRequest,
+  ApplyInviteCodeRequest,
+  SearchRequest,
+  SearchResponse,
+  ReferenceSearchResult
 } from './types';
 
 // Auth
@@ -44,6 +73,79 @@ export async function profileMe(): Promise<User> {
   return request('/profile/me', { auth: true });
 }
 
+export async function updateProfile(data: {
+  name?: string;
+  username?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+}): Promise<User> {
+  return request('/profile/me', { method: 'PUT', data, auth: true });
+}
+
+// Avatar API
+export async function uploadAvatar(file: File): Promise<{ photo_url: string }> {
+  if (!isAuthed()) {
+    throw new Error('Требуется авторизация для загрузки аватарки');
+  }
+  
+  const formData = new FormData();
+  formData.append('avatar', file);
+  
+  return request('/profile/avatar', { 
+    method: 'POST', 
+    data: formData, 
+    auth: true
+  });
+}
+
+export async function deleteAvatar(): Promise<{ success: boolean }> {
+  if (!isAuthed()) {
+    throw new Error('Требуется авторизация для удаления аватарки');
+  }
+  
+  return request('/profile/avatar', { method: 'DELETE', auth: true });
+}
+
+// Weather API
+export interface WeatherData {
+  temperature: number;
+  pressure: number;
+  wind_speed: number;
+  cloudiness: string;
+  precipitation: string;
+  wind_direction: string;
+  source: string;
+  coordinates: {
+    lat: string;
+    lng: string;
+  };
+  date?: string;
+}
+
+export interface WeatherOptions {
+  cloudiness: Array<{ value: string; label: string }>;
+  precipitation: Array<{ value: string; label: string }>;
+  wind_direction: Array<{ value: string; label: string }>;
+}
+
+export async function getWeather(lat: number, lng: number, date?: string): Promise<{ success: boolean; data: WeatherData }> {
+  const params = new URLSearchParams({
+    lat: lat.toString(),
+    lng: lng.toString(),
+  });
+  
+  if (date) {
+    params.append('date', date);
+  }
+  
+  return request(`/weather?${params.toString()}`);
+}
+
+export async function getWeatherOptions(): Promise<{ success: boolean; data: WeatherOptions }> {
+  return request('/weather/options');
+}
+
 export function oauthRedirect(provider: string): string {
   return `https://api.fishtrackpro.ru/auth/${provider}/redirect`;
 }
@@ -53,7 +155,7 @@ export function isAuthed(): boolean {
 }
 
 // Feed/Catch
-export async function feed(limit = 20, offset = 0): Promise<CatchRecord[]> {
+export async function feed(limit = 20, offset = 0): Promise<{ data: { data: CatchRecord[] } }> {
   return request(`/feed?limit=${limit}&offset=${offset}`);
 }
 
@@ -61,29 +163,103 @@ export async function catchById(id: number): Promise<CatchRecord> {
   return request(`/catch/${id}`);
 }
 
+export async function getCatchDetail(id: number): Promise<{ data: CatchRecord }> {
+  return request(`/catch/${id}`);
+}
+
+export async function getCatchComments(id: number): Promise<{ data: CatchComment[] }> {
+  return request(`/catch/${id}/comments`);
+}
+
 export async function addCatch(data: AddCatchRequest): Promise<CatchRecord> {
   return request('/catch', { method: 'POST', data, auth: true });
 }
 
 export async function likeCatch(id: number): Promise<{ liked: boolean; likes_count: number }> {
+  if (!isAuthed()) {
+    throw new Error('Требуется авторизация для лайка');
+  }
   return request(`/catch/${id}/like`, { method: 'POST', auth: true });
 }
 
-export async function addCatchComment(id: number, data: AddCommentRequest): Promise<CatchComment> {
-  return request(`/catch/${id}/comments`, { method: 'POST', data, auth: true });
+export async function addCatchComment(id: number, comment: string): Promise<{ data: CatchComment }> {
+  if (!isAuthed()) {
+    throw new Error('Требуется авторизация для добавления комментария');
+  }
+  return request(`/catch/${id}/comments`, { method: 'POST', data: { body: comment }, auth: true });
+}
+
+// Search
+export async function searchUsers(query: string): Promise<User[]> {
+  const searchParams = new URLSearchParams({ q: query });
+  const response = await request(`/search/users?${searchParams.toString()}`);
+  return response.data;
+}
+
+export async function searchCatches(query: string): Promise<CatchRecord[]> {
+  const searchParams = new URLSearchParams({ q: query });
+  const response = await request(`/search/catches?${searchParams.toString()}`);
+  return response.data;
+}
+
+export const getGroupPost = async (groupId: number, postId: number): Promise<GroupPost> => {
+  const response = await request(`/groups/${groupId}/posts/${postId}`);
+  return response.data;
+};
+
+export const getRatings = async (): Promise<{
+  weekly_catches: any[];
+  monthly_catches: any[];
+  yearly_catches: any[];
+  fishing_days: any[];
+  species_diversity: any[];
+  total_weight: any[];
+}> => {
+  const response = await request('/ratings');
+  return response.data;
+};
+
+// User Statistics
+export async function getUserStats(userId: number, period: 'week' | 'month' | 'year' = 'month'): Promise<{
+  catches_count: number;
+  likes_received: number;
+  comments_received: number;
+  total_weight: number;
+  species_count: number;
+  top_species: Array<{ species: string; count: number }>;
+}> {
+  const searchParams = new URLSearchParams({ period });
+  const response = await request(`/users/${userId}/stats?${searchParams.toString()}`);
+  return response.data;
+}
+
+// Users
+export async function getUser(userId: number): Promise<User> {
+  const response = await request(`/users/${userId}`);
+  return response.data;
+}
+
+// Follow/Unfollow
+export async function checkFollowing(userId: number): Promise<{ following: boolean }> {
+  return request(`/users/${userId}/following`, { auth: true });
 }
 
 // Map/Points
-export async function points(params: { limit?: number; bbox?: string } = {}): Promise<Point[]> {
+export async function points(params: { limit?: number; bbox?: string; includeCatches?: boolean } = {}): Promise<Point[]> {
   const searchParams = new URLSearchParams();
   if (params.limit) searchParams.set('limit', params.limit.toString());
   if (params.bbox) searchParams.set('bbox', params.bbox);
+  if (params.includeCatches) searchParams.set('include_catches', 'true');
   
   const query = searchParams.toString();
   return request(`/map/points${query ? `?${query}` : ''}`);
 }
 
 export async function pointById(id: number): Promise<Point> {
+  return request(`/points/${id}`);
+}
+
+export async function getPlaceDetail(id: number): Promise<Point> {
   return request(`/points/${id}`);
 }
 
@@ -104,6 +280,64 @@ export async function saveWeatherFav(data: SaveWeatherFavRequest): Promise<Weath
   return request('/weather/favs', { method: 'POST', data, auth: true });
 }
 
+export async function deleteWeatherFav(favId: number): Promise<void> {
+  return request(`/weather/favs/${favId}`, { method: 'DELETE', auth: true });
+}
+
+// Weather Points
+export async function getWeatherPoints(): Promise<{ data: WeatherPoint[] }> {
+  return request('/weather/points', { auth: true });
+}
+
+export async function addWeatherPoint(data: AddWeatherPointRequest): Promise<{ data: WeatherPoint }> {
+  return request('/weather/points', {
+    method: 'POST',
+    data,
+    auth: true
+  });
+}
+
+export async function updateWeatherPoint(id: number, data: UpdateWeatherPointRequest): Promise<{ data: WeatherPoint }> {
+  return request(`/weather/points/${id}`, {
+    method: 'PUT',
+    data,
+    auth: true
+  });
+}
+
+export async function deleteWeatherPoint(id: number): Promise<{ success: boolean; message: string }> {
+  return request(`/weather/points/${id}`, {
+    method: 'DELETE',
+    auth: true
+  });
+}
+
+// Geocoding API
+export interface GeocodingResult {
+  name: string;
+  type: 'city' | 'river' | 'lake' | 'waterbody' | 'region' | 'country';
+  address: string;
+  confidence: number;
+}
+
+export async function reverseGeocode(lat: number, lng: number): Promise<{ data: GeocodingResult }> {
+  return request('/geocoding/reverse', { 
+    params: { lat: lat.toString(), lng: lng.toString() }, 
+    auth: true 
+  });
+}
+
+export async function getWeatherForecast(lat: number, lng: number, days: number = 10): Promise<{ data: any[] }> {
+  return request('/weather/forecast', { 
+    params: { 
+      lat: lat.toString(), 
+      lng: lng.toString(), 
+      days: days.toString() 
+    }, 
+    auth: true 
+  });
+}
+
 // Ratings/Bonuses
 export async function addRating(data: AddRatingRequest): Promise<Rating> {
   return request('/ratings', { method: 'POST', data, auth: true });
@@ -114,7 +348,7 @@ export async function getBonuses(): Promise<Bonus[]> {
 }
 
 // Notifications
-export async function notificationsList(limit = 20, offset = 0): Promise<AppNotification[]> {
+export async function notificationsList(limit = 20, offset = 0): Promise<{success: boolean, data: AppNotification[]}> {
   return request(`/notifications?limit=${limit}&offset=${offset}`, { auth: true });
 }
 
@@ -355,8 +589,8 @@ export async function getSubscriptions(params: any = {}): Promise<{ data: Subscr
 }
 
 export async function createSubscription(data: {
-  type: 'pro' | 'premium';
-  payment_method: 'yandex_pay' | 'sber_pay' | 'apple_pay' | 'google_pay' | 'bonuses';
+  type: 'pro' | 'premium' | 'guide';
+  payment_method: 'yandex_pay' | 'sber_pay' | 'apple_pay' | 'google_pay' | 'bonuses' | 'tinkoff_pay';
   use_trial?: boolean;
 }): Promise<{ data: { subscription: Subscription; payment: Payment } }> {
   return request('/subscriptions', { method: 'POST', data, auth: true });
@@ -364,6 +598,127 @@ export async function createSubscription(data: {
 
 export async function getSubscriptionById(id: number): Promise<{ data: Subscription }> {
   return request(`/subscriptions/${id}`, { auth: true });
+}
+
+// Promo codes API
+export async function getPromoCodes(params: any = {}): Promise<{ data: PromoCode[] }> {
+  return request('/admin/promo-codes', { params, auth: true });
+}
+
+export async function createPromoCode(data: CreatePromoCodeRequest): Promise<{ data: PromoCode }> {
+  return request('/admin/promo-codes', { method: 'POST', data, auth: true });
+}
+
+export async function updatePromoCode(id: number, data: Partial<CreatePromoCodeRequest>): Promise<{ data: PromoCode }> {
+  return request(`/admin/promo-codes/${id}`, { method: 'PUT', data, auth: true });
+}
+
+export async function deletePromoCode(id: number): Promise<{ success: boolean }> {
+  return request(`/admin/promo-codes/${id}`, { method: 'DELETE', auth: true });
+}
+
+export async function applyPromoCode(data: ApplyPromoCodeRequest): Promise<{ 
+  success: boolean; 
+  data: { 
+    discount: number; 
+    final_price: number; 
+    promo_code: PromoCode 
+  } 
+}> {
+  return request('/promo-codes/apply', { method: 'POST', data, auth: true });
+}
+
+// Invite codes API
+export async function getInviteCodes(params: any = {}): Promise<{ data: InviteCode[] }> {
+  return request('/invite-codes', { params, auth: true });
+}
+
+export async function createInviteCode(data: CreateInviteCodeRequest): Promise<{ data: InviteCode }> {
+  return request('/invite-codes', { method: 'POST', data, auth: true });
+}
+
+export async function getInviteCodeByCode(code: string): Promise<{ data: InviteCode }> {
+  return request(`/invite-codes/${code}`, { auth: true });
+}
+
+export async function applyInviteCode(data: ApplyInviteCodeRequest): Promise<{ 
+  success: boolean; 
+  data: { 
+    discount: number; 
+    final_price: number; 
+    invite_code: InviteCode 
+  } 
+}> {
+  return request('/invite-codes/apply', { method: 'POST', data, auth: true });
+}
+
+export async function getInviteUsages(params: any = {}): Promise<{ data: InviteUsage[] }> {
+  return request('/invite-codes/usages', { params, auth: true });
+}
+
+// App settings API
+export async function getAppSettings(): Promise<{ data: AppSettings[] }> {
+  return request('/admin/settings', { auth: true });
+}
+
+export async function updateAppSetting(key: string, value: string): Promise<{ data: AppSettings }> {
+  return request(`/admin/settings/${key}`, { method: 'PUT', data: { value }, auth: true });
+}
+
+// Search API
+export async function search(data: SearchRequest): Promise<SearchResponse> {
+  // Пока используем локальный поиск, так как API не готов
+  try {
+    const results = searchReferences(data.query, data.filters?.type);
+    
+    // Преобразуем результаты в формат SearchResult
+    const searchResults = results.map((result: ReferenceSearchResult) => ({
+      type: result.type as 'catch' | 'event' | 'track' | 'user' | 'point' | 'fish_species' | 'fishing_method' | 'bait' | 'location',
+      id: result.id,
+      title: result.title,
+      description: result.description,
+      image: result.image,
+      created_at: result.created_at,
+      relevance_score: 1.0
+    }));
+
+    return {
+      results: searchResults,
+      total: searchResults.length,
+      page: data.page || 1,
+      per_page: data.per_page || 20,
+      last_page: Math.ceil(searchResults.length / (data.per_page || 20))
+    };
+  } catch (error) {
+    console.error('Search error:', error);
+    return {
+      results: [],
+      total: 0,
+      page: 1,
+      per_page: 20,
+      last_page: 1
+    };
+  }
+}
+
+export async function getSearchSuggestions(query: string, type?: string): Promise<{ suggestions: string[] }> {
+  // Пока используем локальные данные, так как API не готов
+  try {
+    const suggestions = getReferenceSuggestions(query, type);
+    return { suggestions };
+  } catch (error) {
+    console.error('Suggestions error:', error);
+    return { suggestions: [] };
+  }
+}
+
+// User invite code API
+export async function getUserInviteCode(): Promise<{ data: InviteCode }> {
+  return request('/user/invite-code', { auth: true });
+}
+
+export async function getUserPromoCode(): Promise<{ data: PromoCode }> {
+  return request('/user/promo-code', { auth: true });
 }
 
 export async function cancelSubscription(id: number, reason?: string): Promise<any> {
@@ -483,4 +838,112 @@ export async function getNearbyFeed(latitude: number, longitude: number, radius:
 
 export async function getFollowingFeed(limit: number = 20, page: number = 1): Promise<{ data: { data: CatchRecord[]; current_page: number; last_page: number; per_page: number; total: number } }> {
   return request('/feed/following', { params: { limit, page }, auth: true });
+}
+
+// Track API functions
+export async function getTracks(): Promise<{ success: boolean; data: Track[] }> {
+  return request('/tracks', { auth: true });
+}
+
+export async function getTrack(id: number): Promise<{ success: boolean; data: Track }> {
+  return request(`/tracks/${id}`, { auth: true });
+}
+
+export async function createTrack(data: CreateTrackRequest): Promise<{ success: boolean; data: Track }> {
+  return request('/tracks', { method: 'POST', data, auth: true });
+}
+
+export async function updateTrack(id: number, data: UpdateTrackRequest): Promise<{ success: boolean; data: Track }> {
+  return request(`/tracks/${id}`, { method: 'PUT', data, auth: true });
+}
+
+export async function addCatchToTrack(trackId: number, data: AddCatchToTrackRequest): Promise<{ success: boolean; data: CatchRecord }> {
+  return request(`/tracks/${trackId}/catch`, { method: 'POST', data, auth: true });
+}
+
+// Friends System API
+export async function getFriends(): Promise<Friendship[]> {
+  return request('/friends', { auth: true });
+}
+
+export async function getFriendRequests(): Promise<FriendRequest[]> {
+  return request('/friends/requests', { auth: true });
+}
+
+export async function getSentFriendRequests(): Promise<FriendRequest[]> {
+  return request('/friends/requests/sent', { auth: true });
+}
+
+export async function createFriendRequest(data: CreateFriendRequestRequest): Promise<FriendRequest> {
+  return request('/friends/requests', { method: 'POST', data, auth: true });
+}
+
+export async function respondToFriendRequest(data: RespondToFriendRequestRequest): Promise<FriendRequest> {
+  return request('/friends/requests/respond', { method: 'POST', data, auth: true });
+}
+
+export async function removeFriend(friendId: number): Promise<void> {
+  return request(`/friends/${friendId}`, { method: 'DELETE', auth: true });
+}
+
+export async function blockUser(userId: number): Promise<void> {
+  return request(`/friends/block/${userId}`, { method: 'POST', auth: true });
+}
+
+export async function unblockUser(userId: number): Promise<void> {
+  return request(`/friends/unblock/${userId}`, { method: 'POST', auth: true });
+}
+
+// User Reports API
+export async function createUserReport(data: CreateUserReportRequest): Promise<UserReport> {
+  return request('/reports/user', { method: 'POST', data, auth: true });
+}
+
+export async function getUserReports(): Promise<UserReport[]> {
+  return request('/reports/user', { auth: true });
+}
+
+// Fishing Companions API
+export async function getFishingCompanions(): Promise<FishingCompanion[]> {
+  return request('/fishing/companions', { auth: true });
+}
+
+export async function addFishingCompanion(data: AddFishingCompanionRequest): Promise<FishingCompanion> {
+  return request('/fishing/companions', { method: 'POST', data, auth: true });
+}
+
+export async function respondToFishingCompanion(data: RespondToFishingCompanionRequest): Promise<FishingCompanion> {
+  return request('/fishing/companions/respond', { method: 'POST', data, auth: true });
+}
+
+export async function removeFishingCompanion(companionId: number): Promise<void> {
+  return request(`/fishing/companions/${companionId}`, { method: 'DELETE', auth: true });
+}
+
+// Privacy Settings API
+export interface PrivacySettings {
+  allow_friend_requests: boolean;
+  allow_follow_notifications: boolean;
+  show_online_status: boolean;
+  show_last_seen: boolean;
+}
+
+export async function getPrivacySettings(): Promise<{ data: PrivacySettings }> {
+  return request('/privacy/settings', { auth: true });
+}
+
+export async function updatePrivacySettings(settings: Partial<PrivacySettings>): Promise<{ data: PrivacySettings }> {
+  return request('/privacy/settings', { method: 'PUT', data: settings, auth: true });
+}
+
+// Report API
+export interface ReportData {
+  type: 'catch' | 'place' | 'user';
+  target_id: number;
+  reason: string;
+  description?: string;
+}
+
+export async function createReport(reportData: ReportData): Promise<{ data: { id: number; message: string } }> {
+  return request('/reports', { method: 'POST', data: reportData, auth: true });
 }

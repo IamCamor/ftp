@@ -10,17 +10,8 @@ class BannersController extends Controller
 {
     public function index(Request $request)
     {
-        $slot = $request->get('slot');
-
-        $query = Banner::active();
-
-        if ($slot) {
-            $query->forSlot($slot);
-        }
-
-        $banners = $query->get();
-
-        return response()->json($banners);
+        // For now, return empty array since banners table doesn't exist
+        return response()->json([]);
     }
 }
 

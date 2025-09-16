@@ -20,8 +20,12 @@ const LoginPage: React.FC = () => {
 
     try {
       const response = await login(formData);
-      localStorage.setItem('token', response.token);
-      navigate(config.routes.feed);
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+        navigate(config.routes.feed);
+      } else {
+        setError('Ошибка получения токена');
+      }
     } catch (err: any) {
       setError(err.message || 'Ошибка входа');
     } finally {
@@ -37,6 +41,7 @@ const LoginPage: React.FC = () => {
     <div className="screen auth-screen">
       <div className="auth-container glass">
         <div className="auth-header">
+          <img src={config.logoUrl} alt="FishTrackPro" className="auth-logo" />
           <h1>Вход в FishTrackPro</h1>
           <p>Добро пожаловать обратно!</p>
         </div>

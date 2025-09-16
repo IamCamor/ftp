@@ -24,6 +24,11 @@ const FollowersModal: React.FC<FollowersModalProps> = ({
   const [following, setFollowing] = useState<Set<number>>(new Set());
 
   useEffect(() => {
+    if (!users || !Array.isArray(users)) {
+      setFilteredUsers([]);
+      return;
+    }
+
     if (searchQuery.trim()) {
       const filtered = users.filter(user => 
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,9 +95,9 @@ const FollowersModal: React.FC<FollowersModalProps> = ({
           </div>
           
           <div className="users-list">
-            {filteredUsers.map((user) => (
+            {filteredUsers && Array.isArray(filteredUsers) ? filteredUsers.map((user) => (
               <div key={user.id} className="user-item">
-                <Avatar src={user.photo_url} size={40} />
+                <Avatar src={user.photo_url} size="xl" name={user.name} />
                 <div className="user-info">
                   <div className="user-name">
                     {user.name}
@@ -114,7 +119,11 @@ const FollowersModal: React.FC<FollowersModalProps> = ({
                   {following.has(user.id) ? 'Отписаться' : 'Подписаться'}
                 </button>
               </div>
-            ))}
+            )) : (
+              <div className="no-users">
+                <p>Пользователи не найдены</p>
+              </div>
+            )}
             
             {hasMore && (
               <button 

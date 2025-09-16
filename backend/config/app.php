@@ -55,9 +55,11 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://api.fishtrackpro.ru'),
 
     'asset_url' => env('ASSET_URL'),
+
+    'frontend_url' => env('FRONTEND_URL', 'https://www.fishtrackpro.ru'),
 
     /*
     |--------------------------------------------------------------------------
@@ -159,6 +161,7 @@ return [
         /*
          * Package Service Providers...
          */
+        \SocialiteProviders\Manager\ServiceProvider::class,
 
         /*
          * Application Service Providers...

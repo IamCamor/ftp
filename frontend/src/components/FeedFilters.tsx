@@ -1,5 +1,4 @@
 import React from 'react';
-import Icon from './Icon';
 
 interface FeedFiltersProps {
   activeFilter: 'all' | 'following' | 'nearby';
@@ -16,19 +15,16 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
     {
       key: 'all' as const,
       label: 'Все',
-      icon: 'public',
       description: 'Все уловы'
     },
     {
       key: 'following' as const,
       label: 'Подписки',
-      icon: 'people',
       description: 'Уловы подписок'
     },
     {
       key: 'nearby' as const,
       label: 'Рядом',
-      icon: 'location_on',
       description: 'Уловы поблизости'
     }
   ];
@@ -43,7 +39,6 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
             onClick={() => onFilterChange(filter.key)}
             title={filter.description}
           >
-            <Icon name={filter.icon} />
             <span className="filter-label">{filter.label}</span>
           </button>
         ))}

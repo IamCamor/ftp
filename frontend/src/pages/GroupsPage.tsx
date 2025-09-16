@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
+import ScreenLayout from '../components/ScreenLayout';
 import { groups } from '../api';
 import type { Group } from '../types';
 
@@ -36,33 +37,19 @@ const GroupsPage: React.FC = () => {
     navigate('/groups/create');
   };
 
-  if (loading) {
-    return (
-      <div className="screen">
-        <div className="loading">Загрузка групп...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="screen">
-        <div className="error">
-          <p>{error}</p>
-          <button onClick={loadGroups} className="btn btn-primary">
-            Попробовать снова
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="screen">
+    <ScreenLayout
+      title="Группы рыбаков"
+      description="Присоединяйтесь к группам рыбаков, делитесь опытом и находите единомышленников"
+      keywords={['группы', 'рыбаки', 'сообщество', 'общение']}
+      loading={loading}
+      error={error}
+      onRetry={loadGroups}
+    >
       <div className="groups-header">
         <h2>Группы рыбаков</h2>
         <button className="btn btn-primary" onClick={handleCreateGroup}>
-          <Icon name="add" size={20} />
+          <Icon name="add" size="md" />
           Создать группу
         </button>
       </div>
@@ -86,7 +73,7 @@ const GroupsPage: React.FC = () => {
                 <div className="group-privacy">
                   <Icon 
                     name={group.privacy === 'public' ? 'public' : 'lock'} 
-                    size={16} 
+                    size="sm" 
                   />
                   <span>{group.privacy === 'public' ? 'Публичная' : 'Приватная'}</span>
                 </div>
@@ -98,12 +85,12 @@ const GroupsPage: React.FC = () => {
 
               <div className="group-meta">
                 <div className="group-owner">
-                  <Avatar src={group.owner?.photo_url} size={24} />
+                  <Avatar src={group.owner?.photo_url} size="md" name={group.owner?.name} />
                   <span>Создатель: {group.owner?.name}</span>
                 </div>
                 
                 <div className="group-stats">
-                  <Icon name="group" size={16} />
+                  <Icon name="group" size="sm" />
                   <span>{group.members_count} участников</span>
                 </div>
               </div>
@@ -111,7 +98,7 @@ const GroupsPage: React.FC = () => {
           </div>
         ))}
       </div>
-    </div>
+    </ScreenLayout>
   );
 };
 

@@ -21,24 +21,59 @@ type FeatureFlags = {
   ratings: boolean;
   bonusProgram: boolean;
   glassUi: boolean;
+  debug: {
+    enableConsoleLogs: boolean;
+    enableDataLogging: boolean;
+  };
 };
 
 const config = {
-  apiBase: import.meta.env.VITE_API_BASE || 'http://localhost:8000/api/v1',
-  siteBase: import.meta.env.VITE_SITE_BASE || 'http://localhost:5173',
-  assetsBase: import.meta.env.VITE_ASSETS_BASE || 'http://localhost:5173/assets',
-  logoUrl: '/logo.svg',
+  apiBase: 'https://api.fishtrackpro.ru/api/v1',
+  siteBase: 'https://fishtrackpro.ru',
+  assetsBase: 'https://fishtrackpro.ru/assets',
+  logoUrl: '/logo.png',
   defaultAvatar: '/default-avatar.png',
   glassEnabled: true,
   feedEvery: 60000,
   map: {
+    enabled: true,
+    provider: 'osm', // 'osm' | 'google' | 'yandex'
     defaultCenter: { lat: 55.751244, lng: 37.618423 },
     defaultZoom: 10,
-    tiles: {
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    },
+    maxZoom: 19,
+    minZoom: 1,
     maxPoints: 1000,
+    tiles: {
+      osm: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    },
+    features: {
+      clickToSelect: true,
+      dragMarker: true,
+      currentLocation: true,
+      zoomControls: true,
+      fullscreen: false
+    },
+    icons: {
+      catch: {
+        url: '/icons/fish-pin.svg',
+        size: [32, 32],
+        anchor: [16, 32],
+        popupAnchor: [0, -32]
+      },
+      point: {
+        url: '/icons/location-pin.svg',
+        size: [28, 28],
+        anchor: [14, 28],
+        popupAnchor: [0, -28]
+      },
+      weather: {
+        url: '/icons/weather-pin.svg',
+        size: [24, 24],
+        anchor: [12, 24],
+        popupAnchor: [0, -24]
+      }
+    }
   },
   features: {
     auth: {
@@ -48,7 +83,7 @@ const config = {
         google: true,
         vk: true,
         yandex: true,
-        apple: true
+        apple: false
       },
       requireAuthForWeatherSave: true,
       links: {
@@ -61,6 +96,10 @@ const config = {
     ratings: true,
     bonusProgram: true,
     glassUi: true,
+    debug: {
+      enableConsoleLogs: true,
+      enableDataLogging: false, // Отключаем логирование массивов данных
+    },
   } as FeatureFlags,
   routes: {
     feed: '/feed',

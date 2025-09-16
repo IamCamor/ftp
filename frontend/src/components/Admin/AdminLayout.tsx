@@ -11,16 +11,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
 
   const menuItems = [
-    { path: '/admin', icon: 'dashboard', label: 'Панель управления' },
-    { path: '/admin/users', icon: 'people', label: 'Пользователи' },
-    { path: '/admin/catches', icon: 'fishing', label: 'Уловы' },
-    { path: '/admin/points', icon: 'place', label: 'Точки на карте' },
-    { path: '/admin/reports', icon: 'report', label: 'Жалобы' },
+    { path: '/q/admin', icon: 'dashboard', label: 'Панель управления' },
+    { path: '/q/admin/users', icon: 'people', label: 'Пользователи' },
+    { path: '/q/admin/catches', icon: 'fishing', label: 'Уловы' },
+    { path: '/q/admin/points', icon: 'place', label: 'Точки на карте' },
+    { path: '/q/admin/reports', icon: 'report', label: 'Жалобы' },
   ];
 
   const isActive = (path: string) => {
-    if (path === '/admin') {
-      return location.pathname === '/admin';
+    if (path === '/q/admin') {
+      return location.pathname === '/q/admin';
     }
     return location.pathname.startsWith(path);
   };

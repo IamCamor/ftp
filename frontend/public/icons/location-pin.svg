@@ -1,0 +1,8 @@
+<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pin background -->
+  <circle cx="14" cy="14" r="13" fill="#3b82f6" stroke="#ffffff" stroke-width="2"/>
+  <!-- Location icon -->
+  <path d="M14 8c-2.2 0-4 1.8-4 4 0 3 4 6 4 6s4-3 4-6c0-2.2-1.8-4-4-4zm0 5.5c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5z" fill="#ffffff"/>
+  <!-- Pin point -->
+  <path d="M14 26c-1.5 0-3-1.5-3-3h6c0 1.5-1.5 3-3 3z" fill="#3b82f6"/>
+</svg>

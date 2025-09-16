@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import BannerSlot from '../components/BannerSlot';
 import FeedFilters from '../components/FeedFilters';
-import OnlineIndicator from '../components/OnlineIndicator';
+import PageLayout from '../components/PageLayout';
+import ModernCatchCard from '../components/ModernCatchCard';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { getFeed, likeCatch } from '../api';
 import type { CatchRecord } from '../types';
-import config from '../config';
 
 const FeedScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ const FeedScreen: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     loadFeed();
@@ -42,7 +43,19 @@ const FeedScreen: React.FC = () => {
 
   const loadFeed = async (page: number = 1, append: boolean = false) => {
     try {
-      setLoading(true);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      
+      setError(null);
+
+      // Check authentication for following feed
+      if (activeFilter === 'following' && !localStorage.getItem('token')) {
+        setError('Для просмотра ленты подписок необходимо войти в систему');
+        return;
+      }
       
       const params: any = {
         type: activeFilter,
@@ -57,7 +70,7 @@ const FeedScreen: React.FC = () => {
       }
 
       const response = await getFeed(params);
-      const newCatches = response.data.data;
+      const newCatches = response.data.data || [];
       
       if (append) {
         setCatches(prev => [...prev, ...newCatches]);
@@ -66,67 +79,84 @@ const FeedScreen: React.FC = () => {
       }
 
       setCurrentPage(page);
-      setHasMore(page < response.data.last_page);
-    } catch (err) {
-      setError('Не удалось загрузить ленту');
+      setHasMore(page < (response.data.last_page || 1));
+    } catch (err: any) {
+      if (err.message?.includes('Authentication required')) {
+        setError('Для просмотра ленты подписок необходимо войти в систему');
+      } else {
+        setError('Не удалось загрузить ленту');
+      }
       console.error('Feed loading error:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const handleLike = async (catchId: number) => {
+
+
+  const handleLike = async (id: number) => {
     try {
-      const result = await likeCatch(catchId);
-      setCatches((prev: CatchRecord[]) => prev.map((c: CatchRecord) => 
-        c.id === catchId 
-          ? { ...c, liked_by_me: result.liked, likes_count: result.likes_count }
-          : c
-      ));
-    } catch (err) {
-      console.error('Like error:', err);
+      await likeCatch(id);
+    } catch (error) {
+      console.error('Failed to like catch:', error);
     }
   };
 
-  const handleCatchClick = (catchId: number) => {
-    navigate(config.routes.catchDetail(catchId));
+  const handleComment = (id: number) => {
+    // Find the catch record to check its type
+    const catchRecord = catches.find(c => c.id === id);
+    if (catchRecord?.type === 'track') {
+      navigate(`/tracks/${id}`);
+    } else {
+      navigate(`/catch/${id}`);
+    }
   };
+
+  const handleShare = (id: number) => {
+    // TODO: Implement share functionality
+    console.log('Share catch:', id);
+  };
+
 
   const handleFilterChange = (filter: 'all' | 'following' | 'nearby') => {
+    // Check if user is authenticated for following feed
+    if (filter === 'following' && !localStorage.getItem('token')) {
+      setError('Для просмотра ленты подписок необходимо войти в систему');
+      setActiveFilter('all'); // Switch back to 'all' filter
+      return;
+    }
+    
     setActiveFilter(filter);
     setCurrentPage(1);
     setCatches([]);
+    setError(null);
   };
 
   const loadMore = () => {
-    if (!loading && hasMore) {
+    if (!loadingMore && hasMore) {
       loadFeed(currentPage + 1, true);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="screen">
-        <div className="loading">Загрузка ленты...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="screen">
-        <div className="error">
-          <p>{error}</p>
-          <button onClick={() => loadFeed()} className="btn btn-primary">
-            Попробовать снова
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Хук для бесконечной прокрутки
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore,
+    loading: loadingMore,
+    onLoadMore: loadMore,
+    rootMargin: '200px'
+  });
 
   return (
-    <div className="screen">
+    <PageLayout
+      title="Лента уловов"
+      description="Последние уловы рыбаков, фотографии и истории успешной рыбалки"
+      keywords={['уловы', 'рыбалка', 'фото', 'лента', 'рыбаки']}
+      className="screen"
+      loading={loading}
+      error={error}
+      onRetry={() => loadFeed()}
+    >
       <BannerSlot slot="feed_top" className="feed-banner" />
       
       <div className="feed-controls">
@@ -141,127 +171,60 @@ const FeedScreen: React.FC = () => {
             className="btn btn-outline btn-sm location-btn"
             title="Разрешить доступ к геолокации для показа ближайших уловов"
           >
-            <Icon name="location_on" size={16} />
+            <Icon name="location_on" size="sm" />
             Показать рядом
           </button>
         )}
       </div>
       
-      <div className="feed">
-        {catches.map((catchRecord) => (
-          <div key={catchRecord.id} className="catch-card glass">
-            <div className="catch-header">
-              <div className="user-info">
-                <Avatar 
-                  src={catchRecord.user.photo_url} 
-                  size={40}
-                  crownIconUrl={catchRecord.user.crown_icon_url}
-                  isPremium={catchRecord.user.is_premium}
-                />
-                <div className="user-details">
-                  <div className="user-name-row">
-                    <span className="user-name">{catchRecord.user.name}</span>
-                    <OnlineIndicator 
-                      isOnline={catchRecord.user.is_online || false}
-                      lastSeenAt={catchRecord.user.last_seen_at}
-                      size="small"
-                    />
-                  </div>
-                  {catchRecord.user.username && (
-                    <span className="user-username">@{catchRecord.user.username}</span>
-                  )}
-                </div>
+      <div className="feed-container">
+        <div className="instagram-feed">
+          {catches.map((catchRecord) => (
+            <ModernCatchCard
+              key={catchRecord.id}
+              catchRecord={catchRecord}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+            />
+          ))}
+
+          {/* Индикатор загрузки для бесконечной прокрутки */}
+          {loadingMore && (
+            <div className="infinite-loading">
+              <div className="loading-spinner">
+                <Icon name="refresh" size="md" />
               </div>
-              <span className="catch-date">
-                {new Date(catchRecord.created_at).toLocaleDateString()}
-              </span>
+              <p>Загрузка новых уловов...</p>
             </div>
+          )}
 
-            {catchRecord.photo_url && (
-              <div 
-                className="catch-photo"
-                onClick={() => handleCatchClick(catchRecord.id)}
-              >
-                <img src={catchRecord.photo_url} alt="Улов" />
-              </div>
-            )}
+          {/* Элемент-наблюдатель для бесконечной прокрутки */}
+          {hasMore && (
+            <div 
+              ref={sentinelRef}
+              style={{ 
+                height: '1px', 
+                width: '100%',
+                position: 'absolute',
+                bottom: '-200px'
+              }}
+              aria-hidden="true"
+            />
+          )}
 
-            <div className="catch-content">
-              <div className="catch-info">
-                {catchRecord.species && (
-                  <div className="info-item">
-                    <Icon name="pets" size={16} />
-                    <span>{catchRecord.species}</span>
-                  </div>
-                )}
-                {catchRecord.length && (
-                  <div className="info-item">
-                    <Icon name="straighten" size={16} />
-                    <span>{catchRecord.length} см</span>
-                  </div>
-                )}
-                {catchRecord.weight && (
-                  <div className="info-item">
-                    <Icon name="scale" size={16} />
-                    <span>{catchRecord.weight} кг</span>
-                  </div>
-                )}
-                {catchRecord.caught_at && (
-                  <div className="info-item">
-                    <Icon name="schedule" size={16} />
-                    <span>{new Date(catchRecord.caught_at).toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-
-              {catchRecord.notes && (
-                <p className="catch-notes">{catchRecord.notes}</p>
-              )}
-
-              <div className="catch-actions">
-                <button
-                  className={`action-button ${catchRecord.liked_by_me ? 'liked' : ''}`}
-                  onClick={() => handleLike(catchRecord.id)}
-                >
-                  <Icon 
-                    name="favorite" 
-                    filled={catchRecord.liked_by_me}
-                    size={20}
-                  />
-                  <span>{catchRecord.likes_count}</span>
-                </button>
-
-                <button
-                  className="action-button"
-                  onClick={() => handleCatchClick(catchRecord.id)}
-                >
-                  <Icon name="comment" size={20} />
-                  <span>{catchRecord.comments_count}</span>
-                </button>
-
-                <button className="action-button">
-                  <Icon name="share" size={20} />
-                </button>
-              </div>
+          {/* Сообщение о том, что больше нет данных */}
+          {!hasMore && catches.length > 0 && (
+            <div className="no-more-data">
+              <Icon name="check_circle" size="md" />
+              <p>Вы просмотрели все доступные уловы</p>
             </div>
-          </div>
-        ))}
-
-        {hasMore && (
-          <div className="load-more-section">
-            <button 
-              className="load-more-button"
-              onClick={loadMore}
-              disabled={loading}
-            >
-              {loading ? 'Загрузка...' : 'Загрузить еще'}
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <BannerSlot slot="feed_bottom" className="feed-banner" />
-    </div>
+    </PageLayout>
   );
 };
 

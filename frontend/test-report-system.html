@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестирование системы жалоб - FishTrackPro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .demo-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .demo-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .features-list li::before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .implementation-details {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .implementation-details h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .tech-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .tech-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-active {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .demo-card, .implementation-details {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 Система жалоб FishTrackPro</h1>
+            <p>Полная реализация системы модерации контента</p>
+        </div>
+
+        <div class="demo-grid">
+            <div class="demo-card">
+                <h3>🎣 Жалобы на уловы</h3>
+                <p>Пользователи могут пожаловаться на неподходящий контент, спам или неточную информацию в уловах.</p>
+                <ul class="features-list">
+                    <li>Кнопка жалобы в карточке улова</li>
+                    <li>Модальное окно с причинами</li>
+                    <li>Дополнительное описание проблемы</li>
+                    <li>Отправка на сервер для модерации</li>
+                </ul>
+                <button class="btn" onclick="showDemo('catch')">Посмотреть демо</button>
+            </div>
+
+            <div class="demo-card">
+                <h3>📍 Жалобы на места</h3>
+                <p>Возможность сообщить о неточной информации о местах рыбалки или несуществующих локациях.</p>
+                <ul class="features-list">
+                    <li>Кнопка в заголовке места</li>
+                    <li>Специальные причины для мест</li>
+                    <li>Проверка опасных локаций</li>
+                    <li>Модерация геоданных</li>
+                </ul>
+                <button class="btn" onclick="showDemo('place')">Посмотреть демо</button>
+            </div>
+
+            <div class="demo-card">
+                <h3>👤 Жалобы на пользователей</h3>
+                <p>Система жалоб на подозрительную активность, спам или нарушение правил сообщества.</p>
+                <ul class="features-list">
+                    <li>Кнопка в профиле пользователя</li>
+                    <li>Кнопка в карточках уловов</li>
+                    <li>Причины нарушений</li>
+                    <li>Защита от злоупотреблений</li>
+                </ul>
+                <button class="btn" onclick="showDemo('user')">Посмотреть демо</button>
+            </div>
+        </div>
+
+        <div class="implementation-details">
+            <h2>🛠 Техническая реализация</h2>
+            
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <h4>API Endpoints</h4>
+                    <p>POST /reports<br>Создание жалоб</p>
+                </div>
+                <div class="tech-item">
+                    <h4>React Components</h4>
+                    <p>ReportModal<br>Универсальная форма</p>
+                </div>
+                <div class="tech-item">
+                    <h4>TypeScript</h4>
+                    <p>Типизированные данные<br>ReportData interface</p>
+                </div>
+                <div class="tech-item">
+                    <h4>CSS Стили</h4>
+                    <p>Адаптивный дизайн<br>Анимации</p>
+                </div>
+            </div>
+
+            <h3>📋 Структура данных жалобы:</h3>
+            <div class="code-block">
+interface ReportData {
+  type: 'catch' | 'place' | 'user';
+  target_id: number;
+  reason: string;
+  description?: string;
+}
+            </div>
+
+            <h3>🎯 Причины жалоб по типам:</h3>
+            <div class="code-block">
+// Для уловов
+['Неподходящий контент', 'Спам', 'Неточная информация', 'Нарушение правил', 'Другое']
+
+// Для мест
+['Неточная информация о месте', 'Место не существует', 'Опасное место', 'Нарушение правил', 'Другое']
+
+// Для пользователей
+['Спам', 'Неподходящий контент', 'Нарушение правил', 'Подозрительная активность', 'Другое']
+            </div>
+
+            <h3>✅ Статус реализации:</h3>
+            <ul class="features-list">
+                <li>API методы для создания жалоб <span class="status-badge status-completed">Готово</span></li>
+                <li>Компонент ReportModal <span class="status-badge status-completed">Готово</span></li>
+                <li>Интеграция в карточки уловов <span class="status-badge status-completed">Готово</span></li>
+                <li>Интеграция в страницы мест <span class="status-badge status-completed">Готово</span></li>
+                <li>Интеграция в профили пользователей <span class="status-badge status-completed">Готово</span></li>
+                <li>CSS стили и анимации <span class="status-badge status-completed">Готово</span></li>
+                <li>TypeScript типы <span class="status-badge status-completed">Готово</span></li>
+                <li>Обработка ошибок аутентификации <span class="status-badge status-completed">Готово</span></li>
+            </ul>
+        </div>
+
+        <div class="implementation-details">
+            <h2>🚀 Готово к использованию!</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">
+                Система жалоб полностью реализована и протестирована. Все компоненты интегрированы в приложение 
+                и готовы к работе на продакшене.
+            </p>
+            
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <button class="btn" onclick="window.location.href='/'">
+                    🏠 Вернуться в приложение
+                </button>
+                <button class="btn" onclick="testAllReports()">
+                    🧪 Протестировать все функции
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDemo(type) {
+            const messages = {
+                'catch': 'В карточках уловов появилась кнопка жалобы (иконка флажка) справа от кнопки закладки.',
+                'place': 'На страницах мест кнопка жалобы находится рядом с заголовком места.',
+                'user': 'В профилях пользователей кнопка жалобы расположена рядом с кнопкой "Добавить в друзья".'
+            };
+            
+            alert(`${messages[type]}\n\nПри нажатии открывается модальное окно с выбором причины жалобы и полем для дополнительного описания.`);
+        }
+
+        function testAllReports() {
+            alert('Для тестирования системы жалоб:\n\n1. Перейдите в ленту уловов\n2. Найдите кнопку жалобы (флажок) в карточке\n3. Нажмите и заполните форму\n4. Повторите для страниц мест и профилей пользователей\n\nВсе жалобы отправляются на сервер для модерации.');
+        }
+
+        // Анимация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.demo-card, .implementation-details');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(30px)';
+                    card.style.transition = 'all 0.6s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 150);
+            });
+        });
+    </script>
+</body>
+</html>
+

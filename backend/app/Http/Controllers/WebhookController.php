@@ -11,11 +11,19 @@ use App\Services\TelegramService;
 
 class WebhookController extends Controller
 {
-    private TelegramService $telegramService;
+    private ?TelegramService $telegramService = null;
 
-    public function __construct(TelegramService $telegramService)
+    public function __construct()
     {
-        $this->telegramService = $telegramService;
+        // TelegramService will be instantiated only when needed
+    }
+    
+    private function getTelegramService(): TelegramService
+    {
+        if ($this->telegramService === null) {
+            $this->telegramService = app(TelegramService::class);
+        }
+        return $this->telegramService;
     }
     /**
      * Handle GitHub webhook for deployment
@@ -148,7 +156,7 @@ class WebhookController extends Controller
                 '{error}' => $error,
             ];
             
-            $this->telegramService->sendDeploymentNotification($notificationData);
+            $this->getTelegramService()->sendDeploymentNotification($notificationData);
         } catch (\Exception $e) {
             Log::error('Failed to send deployment notification', [
                 'error' => $e->getMessage()
@@ -161,10 +169,19 @@ class WebhookController extends Controller
      */
     public function health(): JsonResponse
     {
-        return response()->json([
-            'status' => 'healthy',
-            'timestamp' => now()->toISOString(),
-            'version' => config('app.version', '1.0.0')
-        ]);
+        try {
+            return response()->json([
+                'status' => 'healthy',
+                'timestamp' => now()->toISOString(),
+                'version' => config('app.version', '1.0.0'),
+                'database' => 'connected'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'timestamp' => now()->toISOString(),
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

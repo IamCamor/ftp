@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('catch_records', function (Blueprint $table) {
             $table->enum('moderation_status', ['pending', 'approved', 'rejected', 'pending_review'])
                   ->default('pending')
-                  ->after('is_public');
+                  ->after('privacy');
             $table->json('moderation_result')->nullable()->after('moderation_status');
             $table->timestamp('moderated_at')->nullable()->after('moderation_result');
             $table->foreignId('moderated_by')->nullable()->constrained('users')->onDelete('set null')->after('moderated_at');

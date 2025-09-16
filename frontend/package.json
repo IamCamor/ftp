@@ -8,17 +8,27 @@
     "dev:safe": "./start-dev.sh",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview --host 0.0.0.0 --port 4173"
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",
+    "lucide-react": "^0.544.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
-    "react-router-dom": "^6.8.1"
+    "react-leaflet-cluster": "^3.1.1",
+    "react-router-dom": "^6.8.1",
+    "recharts": "^3.2.0"
   },
   "devDependencies": {
-    "@types/leaflet": "^1.9.8",
+    "@playwright/test": "^1.55.0",
+    "@types/leaflet": "^1.9.20",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -27,7 +37,7 @@
     "eslint": "^8.57.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.3.5",
-    "typescript": "^5.0.2",
+    "typescript": "^5.9.2",
     "vite": "^4.3.2"
   }
 }

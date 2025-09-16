@@ -7,11 +7,86 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use OpenApi\Annotations as OA;
 
 class UserManagementController extends Controller
 {
     /**
-     * Get all users with pagination and filters.
+     * @OA\Get(
+     *     path="/admin/users",
+     *     tags={"Admin - Users"},
+     *     summary="Получить список пользователей",
+     *     description="Возвращает список всех пользователей с пагинацией и фильтрами для админ-панели",
+     *     security={{"jwt": {}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Номер страницы",
+     *         @OA\Schema(type="integer", example=1, minimum=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Количество пользователей на странице",
+     *         @OA\Schema(type="integer", example=20, minimum=1, maximum=100)
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Поиск по имени или email",
+     *         @OA\Schema(type="string", example="Иван")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Фильтр по статусу",
+     *         @OA\Schema(type="string", enum={"active", "blocked"}, example="active")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort",
+     *         in="query",
+     *         description="Сортировка",
+     *         @OA\Schema(type="string", enum={"created_at", "name", "email"}, example="created_at")
+     *     ),
+     *     @OA\Parameter(
+     *         name="order",
+     *         in="query",
+     *         description="Порядок сортировки",
+     *         @OA\Schema(type="string", enum={"asc", "desc"}, example="desc")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список пользователей",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Иван Иванов"),
+     *                 @OA\Property(property="username", type="string", example="ivan_ivanov"),
+     *                 @OA\Property(property="email", type="string", example="ivan@example.com"),
+     *                 @OA\Property(property="is_blocked", type="boolean", example=false),
+     *                 @OA\Property(property="catches_count", type="integer", example=25),
+     *                 @OA\Property(property="followers_count", type="integer", example=150),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="last_login_at", type="string", format="date-time")
+     *             )),
+     *             @OA\Property(property="pagination", type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="per_page", type="integer", example=20),
+     *                 @OA\Property(property="total", type="integer", example=100),
+     *                 @OA\Property(property="last_page", type="integer", example=5)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Требуется аутентификация"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Недостаточно прав доступа"
+     *     )
+     * )
      */
     public function index(Request $request): JsonResponse
     {
@@ -52,6 +127,80 @@ class UserManagementController extends Controller
     /**
      * Get user details.
      */
+    /**
+     * @OA\Get(
+     *     path="/admin/users/{user}",
+     *     tags={"Admin - Users"},
+     *     summary="Получить детали пользователя",
+     *     description="Возвращает подробную информацию о пользователе для админ-панели",
+     *     security={{"jwt": {}}},
+     *     @OA\Parameter(
+     *         name="user",
+     *         in="path",
+     *         description="ID пользователя",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Детали пользователя",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Иван Иванов"),
+     *                 @OA\Property(property="username", type="string", example="ivan_ivanov"),
+     *                 @OA\Property(property="email", type="string", example="ivan@example.com"),
+     *                 @OA\Property(property="is_blocked", type="boolean", example=false),
+     *                 @OA\Property(property="blocked_at", type="string", format="date-time"),
+     *                 @OA\Property(property="blocked_by", type="object",
+     *                     @OA\Property(property="id", type="integer", example=2),
+     *                     @OA\Property(property="name", type="string", example="Админ Админов"),
+     *                     @OA\Property(property="username", type="string", example="admin")
+     *                 ),
+     *                 @OA\Property(property="catches_count", type="integer", example=25),
+     *                 @OA\Property(property="followers_count", type="integer", example=150),
+     *                 @OA\Property(property="points_count", type="integer", example=5),
+     *                 @OA\Property(property="reports_count", type="integer", example=2),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="last_login_at", type="string", format="date-time"),
+     *                 @OA\Property(property="recent_catches", type="array", @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="fish_type", type="string", example="Щука"),
+     *                     @OA\Property(property="weight", type="number", format="float", example=2.5),
+     *                     @OA\Property(property="created_at", type="string", format="date-time")
+     *                 )),
+     *                 @OA\Property(property="recent_points", type="array", @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="Волга, г. Тверь"),
+     *                     @OA\Property(property="lat", type="number", format="float", example=56.8586),
+     *                     @OA\Property(property="lng", type="number", format="float", example=35.9117),
+     *                     @OA\Property(property="created_at", type="string", format="date-time")
+     *                 )),
+     *                 @OA\Property(property="recent_reports", type="array", @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="type", type="string", example="spam"),
+     *                     @OA\Property(property="reason", type="string", example="Неуместный контент"),
+     *                     @OA\Property(property="status", type="string", example="pending"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time")
+     *                 ))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Требуется аутентификация"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Недостаточно прав доступа"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     )
+     * )
+     */
     public function show(User $user): JsonResponse
     {
         $user->load([
@@ -74,7 +223,63 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Block/unblock user.
+     * @OA\Post(
+     *     path="/admin/users/{user}/toggle-block",
+     *     tags={"Admin - Users"},
+     *     summary="Заблокировать/разблокировать пользователя",
+     *     description="Блокирует или разблокирует пользователя с указанием причины",
+     *     security={{"jwt": {}}},
+     *     @OA\Parameter(
+     *         name="user",
+     *         in="path",
+     *         description="ID пользователя",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"is_blocked"},
+     *             @OA\Property(property="is_blocked", type="boolean", example=true, description="Заблокировать пользователя"),
+     *             @OA\Property(property="block_reason", type="string", example="Нарушение правил сообщества", maxLength=500, description="Причина блокировки (обязательно при блокировке)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Статус пользователя изменен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User blocked successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Иван Иванов"),
+     *                 @OA\Property(property="is_blocked", type="boolean", example=true),
+     *                 @OA\Property(property="block_reason", type="string", example="Нарушение правил сообщества"),
+     *                 @OA\Property(property="blocked_at", type="string", format="date-time"),
+     *                 @OA\Property(property="blocked_by", type="object",
+     *                     @OA\Property(property="id", type="integer", example=2),
+     *                     @OA\Property(property="name", type="string", example="Админ Админов")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Требуется аутентификация"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Недостаточно прав доступа"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибка валидации"
+     *     )
+     * )
      */
     public function toggleBlock(Request $request, User $user): JsonResponse
     {

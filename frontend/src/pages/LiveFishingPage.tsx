@@ -101,14 +101,14 @@ const LiveFishingPage: React.FC = () => {
       <div className="live-header">
         <h2>Онлайн рыбалка</h2>
         <button className="btn btn-primary" onClick={handleStartStream}>
-          <Icon name="videocam" size={20} />
+          <Icon name="videocam" size="md" />
           Начать трансляцию
         </button>
       </div>
 
       {sessions.length === 0 ? (
         <div className="empty-state">
-          <Icon name="videocam_off" size={64} />
+          <Icon name="videocam_off" size="xl" />
           <h3>Нет активных трансляций</h3>
           <p>Начните свою трансляцию или дождитесь других рыбаков</p>
         </div>
@@ -120,15 +120,15 @@ const LiveFishingPage: React.FC = () => {
                 <div className="session-info">
                   <h3>{session.title}</h3>
                   <div className="session-meta">
-                    <Avatar src={session.user?.photo_url} size={32} />
+                    <Avatar src={session.user?.photo_url} size="lg" name={session.user?.name} />
                     <div>
                       <span className="streamer-name">{session.user?.name}</span>
                       <div className="session-stats">
-                        <Icon name="visibility" size={16} />
+                        <Icon name="visibility" size="sm" />
                         <span>{session.viewers_count} зрителей</span>
                         {session.started_at && (
                           <>
-                            <Icon name="schedule" size={16} />
+                            <Icon name="schedule" size="sm" />
                             <span>{formatDuration(session.started_at)}</span>
                           </>
                         )}
@@ -148,7 +148,7 @@ const LiveFishingPage: React.FC = () => {
               )}
 
               <div className="session-location">
-                <Icon name="location_on" size={16} />
+                <Icon name="location_on" size="sm" />
                 <span>{session.lat.toFixed(4)}, {session.lng.toFixed(4)}</span>
               </div>
 
@@ -158,7 +158,7 @@ const LiveFishingPage: React.FC = () => {
                     className="btn btn-secondary"
                     onClick={() => handleLeaveSession(session.id)}
                   >
-                    <Icon name="stop" size={16} />
+                    <Icon name="stop" size="sm" />
                     Покинуть
                   </button>
                 ) : (
@@ -166,7 +166,7 @@ const LiveFishingPage: React.FC = () => {
                     className="btn btn-primary"
                     onClick={() => handleJoinSession(session.id)}
                   >
-                    <Icon name="play_arrow" size={16} />
+                    <Icon name="play_arrow" size="sm" />
                     Смотреть
                   </button>
                 )}
@@ -175,7 +175,7 @@ const LiveFishingPage: React.FC = () => {
                   className="btn btn-secondary"
                   onClick={() => navigate(`/live/${session.id}`)}
                 >
-                  <Icon name="open_in_new" size={16} />
+                  <Icon name="open_in_new" size="sm" />
                   Открыть
                 </button>
               </div>

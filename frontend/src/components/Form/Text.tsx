@@ -38,7 +38,7 @@ const TextInput: React.FC<TextInputProps> = ({
       <div className="input-wrapper">
         {icon && (
           <div className="input-icon">
-            <Icon name={icon} size={20} />
+            <Icon name={icon} size="md" />
           </div>
         )}
         

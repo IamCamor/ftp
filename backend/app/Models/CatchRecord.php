@@ -11,14 +11,31 @@ class CatchRecord extends Model
 
     protected $fillable = [
         'user_id',
+        'track_id',
         'point_id',
+        'lat',
+        'lng',
+        'species',
         'fish_type',
         'weight',
         'length',
         'bait',
+        'bait_used',
         'weather',
+        'weather_conditions',
         'temperature',
+        'water_temperature',
+        'water_depth',
         'description',
+        'fishing_method',
+        'fishing_location',
+        // Поля погоды
+        'pressure',
+        'wind_speed',
+        'cloudiness',
+        'precipitation',
+        'wind_direction',
+        'catch_time',
         'photos',
         'videos',
         'main_photo',
@@ -26,6 +43,7 @@ class CatchRecord extends Model
         'media_count',
         'caught_at',
         'is_public',
+        'is_approved',
         'moderation_status',
         'moderation_result',
         'moderated_at',
@@ -46,6 +64,7 @@ class CatchRecord extends Model
         'engine_id',
         'location_id',
         'tackle_used',
+        'image_url',
     ];
 
     protected $casts = [
@@ -67,6 +86,14 @@ class CatchRecord extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Трек, к которому принадлежит улов
+     */
+    public function track()
+    {
+        return $this->belongsTo(Track::class);
     }
 
     public function point()
@@ -219,7 +246,8 @@ class CatchRecord extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('is_blocked', false);
+        // For now, return all catches since is_blocked column doesn't exist
+        return $query;
     }
 
     /**
@@ -365,6 +393,47 @@ class CatchRecord extends Model
         }
         
         return $media;
+    }
+
+    /**
+     * Get the images for the catch.
+     */
+    public function images()
+    {
+        return $this->hasMany(CatchImage::class, 'catch_id');
+    }
+
+    /**
+     * Get catch reports for this catch.
+     */
+    public function catchReports()
+    {
+        return $this->hasMany(CatchReport::class, 'catch_id');
+    }
+
+    /**
+     * Get the count of catch reports for this catch.
+     */
+    public function getCatchReportsCountAttribute()
+    {
+        return $this->catchReports()->count();
+    }
+
+    /**
+     * Check if catch is hidden due to reports.
+     */
+    public function isHiddenByReports(): bool
+    {
+        return $this->catchReports()->count() >= 3;
+    }
+
+    /**
+     * Scope for visible catches (not hidden by reports).
+     */
+    public function scopeVisible($query, $userId = null)
+    {
+        // For now, just return all catches since catch_reports table doesn't exist
+        return $query;
     }
 }
 

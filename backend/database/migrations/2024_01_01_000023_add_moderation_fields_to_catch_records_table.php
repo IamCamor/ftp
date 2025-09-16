@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('catch_records', function (Blueprint $table) {
-            $table->boolean('is_blocked')->default(false)->after('is_public');
+            $table->boolean('is_blocked')->default(false)->after('privacy');
             $table->timestamp('blocked_at')->nullable()->after('is_blocked');
             $table->text('block_reason')->nullable()->after('blocked_at');
             $table->unsignedBigInteger('blocked_by')->nullable()->after('block_reason');

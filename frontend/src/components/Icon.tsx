@@ -5,8 +5,9 @@ interface IconProps {
   filled?: boolean;
   weight?: number;
   grade?: number;
-  size?: number;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const Icon: React.FC<IconProps> = ({
@@ -14,18 +15,38 @@ const Icon: React.FC<IconProps> = ({
   filled = false,
   weight = 400,
   grade = 0,
-  size = 24,
-  className = ''
+  size = 'md',
+  className = '',
+  style = {}
 }) => {
-  const style = {
-    fontVariationSettings: `'FILL' ${filled ? 1 : 0}, 'wght' ${weight}, 'GRAD' ${grade}, 'opsz' ${size}`,
-    fontSize: `${size}px`,
+  // Унифицированные размеры иконок
+  const sizeMap = {
+    xs: 16,
+    sm: 20,
+    md: 24,
+    lg: 28,
+    xl: 32
+  };
+
+  const iconSize = typeof size === 'number' ? size : sizeMap[size];
+  
+  const iconStyle = {
+    fontVariationSettings: `'FILL' ${filled ? 1 : 0}, 'wght' ${weight}, 'GRAD' ${grade}, 'opsz' ${iconSize}`,
+    fontSize: `${iconSize}px`,
+    width: `${iconSize}px`,
+    height: `${iconSize}px`,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: 1,
+    ...style,
   };
 
   return (
     <span
-      className={`material-symbols-rounded ${className}`}
-      style={style}
+      className={`material-symbols-rounded icon ${className}`}
+      style={iconStyle}
+      aria-hidden="true"
     >
       {name}
     </span>

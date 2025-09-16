@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест бесконечной прокрутки</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .feed {
+            padding: 20px;
+        }
+        
+        .item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .item:hover {
+            border-color: #ff6b35;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+        }
+        
+        .item-title {
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 8px 0;
+        }
+        
+        .item-content {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ff6b35;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-more {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .no-more::before {
+            content: "✓";
+            display: block;
+            font-size: 24px;
+            color: #28a745;
+            margin-bottom: 8px;
+        }
+        
+        .sentinel {
+            height: 1px;
+            width: 100%;
+            position: absolute;
+            bottom: -200px;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎣 Тест бесконечной прокрутки</h1>
+            <p>Прокрутите вниз, чтобы загрузить больше контента</p>
+        </div>
+        
+        <div class="feed" id="feed">
+            <!-- Контент будет добавлен здесь -->
+        </div>
+    </div>
+
+    <script>
+        class InfiniteScrollDemo {
+            constructor() {
+                this.feed = document.getElementById('feed');
+                this.items = [];
+                this.loading = false;
+                this.hasMore = true;
+                this.page = 1;
+                this.sentinel = null;
+                
+                this.init();
+            }
+            
+            init() {
+                this.createSentinel();
+                this.loadItems();
+                this.setupIntersectionObserver();
+            }
+            
+            createSentinel() {
+                this.sentinel = document.createElement('div');
+                this.sentinel.className = 'sentinel';
+                this.sentinel.setAttribute('aria-hidden', 'true');
+                this.feed.appendChild(this.sentinel);
+            }
+            
+            setupIntersectionObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    const [entry] = entries;
+                    if (entry.isIntersecting && this.hasMore && !this.loading) {
+                        this.loadMore();
+                    }
+                }, {
+                    root: null,
+                    rootMargin: '200px',
+                    threshold: 0.1
+                });
+                
+                observer.observe(this.sentinel);
+            }
+            
+            async loadItems() {
+                this.loading = true;
+                this.showLoading();
+                
+                // Имитация загрузки данных
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const newItems = this.generateItems();
+                this.items.push(...newItems);
+                this.renderItems();
+                
+                this.loading = false;
+                this.hideLoading();
+                
+                // Проверяем, есть ли еще данные
+                if (this.page >= 5) {
+                    this.hasMore = false;
+                    this.showNoMore();
+                }
+            }
+            
+            async loadMore() {
+                if (this.loading || !this.hasMore) return;
+                
+                this.page++;
+                await this.loadItems();
+            }
+            
+            generateItems() {
+                const items = [];
+                const titles = [
+                    'Улов на Оке',
+                    'Рыбалка на Волге',
+                    'Утренний клёв',
+                    'Вечерняя рыбалка',
+                    'Удачный день',
+                    'Большой улов',
+                    'Трофейная рыба',
+                    'Семейная рыбалка'
+                ];
+                
+                const descriptions = [
+                    'Отличная рыбалка сегодня! Поймал несколько хороших экземпляров.',
+                    'Погода была идеальной для рыбалки. Вода чистая, рыба активная.',
+                    'Использовал новую приманку - результат превзошел ожидания.',
+                    'Долго искал подходящее место, но оно того стоило.',
+                    'Рыба клевала с самого утра. Удалось поймать несколько трофеев.',
+                    'Первый раз на этом месте. Очень понравилось, обязательно вернусь.',
+                    'Использовал джиг-спиннинг. Щука брала активно.',
+                    'Семейная рыбалка прошла отлично. Дети в восторге!'
+                ];
+                
+                for (let i = 0; i < 5; i++) {
+                    items.push({
+                        id: this.items.length + i + 1,
+                        title: titles[Math.floor(Math.random() * titles.length)],
+                        content: descriptions[Math.floor(Math.random() * descriptions.length)]
+                    });
+                }
+                
+                return items;
+            }
+            
+            renderItems() {
+                const newItems = this.items.slice(-5); // Показываем только последние 5
+                
+                newItems.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'item';
+                    itemElement.innerHTML = `
+                        <div class="item-title">${item.title} #${item.id}</div>
+                        <div class="item-content">${item.content}</div>
+                    `;
+                    
+                    // Вставляем перед sentinel
+                    this.feed.insertBefore(itemElement, this.sentinel);
+                });
+            }
+            
+            showLoading() {
+                const existingLoading = this.feed.querySelector('.loading');
+                if (existingLoading) return;
+                
+                const loading = document.createElement('div');
+                loading.className = 'loading';
+                loading.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <p>Загрузка новых уловов...</p>
+                `;
+                
+                this.feed.insertBefore(loading, this.sentinel);
+            }
+            
+            hideLoading() {
+                const loading = this.feed.querySelector('.loading');
+                if (loading) {
+                    loading.remove();
+                }
+            }
+            
+            showNoMore() {
+                const noMore = document.createElement('div');
+                noMore.className = 'no-more';
+                noMore.innerHTML = '<p>Вы просмотрели все доступные уловы</p>';
+                
+                this.feed.insertBefore(noMore, this.sentinel);
+                this.sentinel.remove();
+            }
+        }
+        
+        // Запускаем демо при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            new InfiniteScrollDemo();
+        });
+    </script>
+</body>
+</html>
+

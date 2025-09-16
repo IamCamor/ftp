@@ -7,9 +7,53 @@ use App\Models\Chat;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Annotations as OA;
 
 class ChatsController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/chats",
+     *     tags={"Chats"},
+     *     summary="Получить список чатов",
+     *     description="Возвращает список чатов пользователя с последними сообщениями",
+     *     security={{"jwt": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список чатов",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="type", type="string", example="private"),
+     *                 @OA\Property(property="name", type="string", example="Чат с Иваном"),
+     *                 @OA\Property(property="unread_count", type="integer", example=3),
+     *                 @OA\Property(property="last_message_at", type="string", format="date-time"),
+     *                 @OA\Property(property="latest_message", type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="content", type="string", example="Привет! Как дела?"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time"),
+     *                     @OA\Property(property="user", type="object",
+     *                         @OA\Property(property="id", type="integer", example=1),
+     *                         @OA\Property(property="name", type="string", example="Иван Иванов"),
+     *                         @OA\Property(property="username", type="string", example="ivan_ivanov")
+     *                     )
+     *                 ),
+     *                 @OA\Property(property="participants", type="array", @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="Иван Иванов"),
+     *                     @OA\Property(property="username", type="string", example="ivan_ivanov"),
+     *                     @OA\Property(property="avatar_url", type="string", example="https://example.com/avatar.jpg")
+     *                 ))
+     *             ))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Требуется аутентификация"
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
         $user = $request->user();
@@ -49,6 +93,70 @@ class ChatsController extends Controller
         return response()->json($messages);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/chats/{id}/messages",
+     *     tags={"Chats"},
+     *     summary="Отправить сообщение в чат",
+     *     description="Отправляет новое сообщение в чат",
+     *     security={{"jwt": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID чата",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"message"},
+     *             @OA\Property(property="message", type="string", example="Привет! Как дела?", maxLength=1000),
+     *             @OA\Property(property="attachment_url", type="string", example="https://example.com/image.jpg", maxLength=512),
+     *             @OA\Property(property="attachment_type", type="string", enum={"image", "file", "location"}, example="image")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Сообщение отправлено",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Message sent successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="content", type="string", example="Привет! Как дела?"),
+     *                 @OA\Property(property="attachment_url", type="string", example="https://example.com/image.jpg"),
+     *                 @OA\Property(property="attachment_type", type="string", example="image"),
+     *                 @OA\Property(property="chat_id", type="integer", example=1),
+     *                 @OA\Property(property="user_id", type="integer", example=1),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="user", type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="Иван Иванов"),
+     *                     @OA\Property(property="username", type="string", example="ivan_ivanov"),
+     *                     @OA\Property(property="avatar_url", type="string", example="https://example.com/avatar.jpg")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Требуется аутентификация"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет прав на отправку сообщений в чат"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Чат не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибка валидации"
+     *     )
+     * )
+     */
     public function sendMessage(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [

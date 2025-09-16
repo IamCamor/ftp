@@ -222,7 +222,7 @@ export class FishTrackProTester {
       console.log('\n🎣 Testing FishTrackPro with MCP Playwright...\n');
       
       // Переходим на главную страницу
-      await this.mcpClient.navigateToUrl('http://localhost:5173');
+      await this.mcpClient.navigateToUrl('https://fishtrackpro.ru');
       await this.sleep(2000); // Ждем загрузки
       
       // Делаем скриншот главной страницы

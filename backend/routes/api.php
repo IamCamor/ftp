@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\CatchController;
 use App\Http\Controllers\Api\V1\CatchLikeController;
 use App\Http\Controllers\Api\V1\CatchCommentController;
+use App\Http\Controllers\Api\V1\CatchReportController;
 use App\Http\Controllers\Api\V1\PointsController;
 use App\Http\Controllers\Api\V1\WeatherFavController;
 use App\Http\Controllers\Api\V1\RatingsController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Api\V1\NotificationsController;
 use App\Http\Controllers\Api\V1\BannersController;
 use App\Http\Controllers\Api\V1\GroupsController;
 use App\Http\Controllers\Api\V1\EventsController;
+use App\Http\Controllers\Api\V1\TrackController;
 use App\Http\Controllers\Api\V1\ChatsController;
 use App\Http\Controllers\Api\V1\LiveSessionsController;
 use App\Http\Controllers\Api\V1\Admin\AdminController;
@@ -40,19 +42,36 @@ use App\Http\Controllers\Api\V1\WatchController;
 use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\EventSubscriptionController;
 use App\Http\Controllers\Api\V1\EventNewsController;
+use App\Http\Controllers\Api\V1\UserCodeController;
+use App\Http\Controllers\Api\V1\WeatherPointController;
+use App\Http\Controllers\PrivacySettingsController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\TelegramController;
+use App\Http\Controllers\TestController;
+use App\Http\Controllers\AIController;
 
 Route::prefix('v1')->group(function () {
     // Auth
+    Route::get('/auth/test', [AuthController::class, 'test']);
+    Route::post('/auth/test-register', [AuthController::class, 'testRegister']);
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:api');
-    Route::get('/profile/me', [ProfileController::class, 'me'])->middleware('auth:api');
+    Route::get('/profile/me', [ProfileController::class, 'me']);
+    Route::put('/profile/me', [ProfileController::class, 'update'])->middleware('simple.auth');
+    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar']);
+    Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar']);
 
     // Users
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{user}', [UserController::class, 'show']);
+    Route::get('/users/{user}/following', [UserController::class, 'following']);
+    Route::get('/users/{user}/followers', [UserController::class, 'followers']);
+    Route::get('/users/{user}/stats', [UserController::class, 'stats']);
+    
+    // User codes
+    Route::get('/user/invite-code', [UserCodeController::class, 'getInviteCode'])->middleware('simple.auth');
+    Route::get('/user/promo-code', [UserCodeController::class, 'getPromoCode'])->middleware('simple.auth');
 
     // OAuth
     Route::get('/auth/{provider}/redirect', [OAuthController::class, 'redirect']);
@@ -64,27 +83,57 @@ Route::prefix('v1')->group(function () {
   Route::get('/feed/nearby', [FeedController::class, 'nearby']);
   Route::get('/feed/following', [FeedController::class, 'following']);
   Route::get('/catch/{id}', [CatchController::class, 'show']);
-    Route::post('/catch', [CatchController::class, 'store'])->middleware('auth:api');
-    Route::post('/catch/{id}/like', [CatchLikeController::class, 'toggle'])->middleware('auth:api');
-    Route::post('/catch/{id}/comments', [CatchCommentController::class, 'store'])->middleware('auth:api');
+    Route::get('/catch/{id}/comments', [CatchController::class, 'comments']);
+    Route::post('/catch', [CatchController::class, 'store'])->middleware('simple.auth');
+    Route::put('/catch/{id}', [CatchController::class, 'update'])->middleware('simple.auth');
+    Route::delete('/catch/{id}', [CatchController::class, 'destroy'])->middleware('simple.auth');
+    Route::post('/catch/{id}/like', [CatchController::class, 'like'])->middleware('simple.auth');
+    Route::post('/catch/{id}/comments', [CatchController::class, 'addComment'])->middleware('simple.auth');
+    
+    // Catch Reports
+    Route::post('/catch/{id}/report', [CatchReportController::class, 'store'])->middleware('simple.auth');
+    Route::get('/catch/{id}/reports', [CatchReportController::class, 'index'])->middleware(['simple.auth', 'admin']);
+    Route::get('/catch/report-categories', [CatchReportController::class, 'categories']);
 
     // Map/Points
     Route::get('/map/points', [PointsController::class, 'index']);
     Route::get('/points/{id}', [PointsController::class, 'show']);
-    Route::post('/points', [PointsController::class, 'store'])->middleware('auth:api');
+    Route::post('/points', [PointsController::class, 'store'])->middleware('simple.auth');
     Route::get('/points/{id}/media', [PointsController::class, 'media']);
 
     // Weather favs
-    Route::get('/weather/favs', [WeatherFavController::class, 'index'])->middleware('auth:api');
-    Route::post('/weather/favs', [WeatherFavController::class, 'store'])->middleware('auth:api');
+    Route::get('/weather/favs', [WeatherFavController::class, 'index']);
+    Route::post('/weather/favs', [WeatherFavController::class, 'store']);
 
     // Ratings/Bonuses
-    Route::post('/ratings', [RatingsController::class, 'store'])->middleware('auth:api');
-    Route::get('/bonuses', [BonusesController::class, 'index'])->middleware('auth:api');
+    Route::get('/ratings', [App\Http\Controllers\Api\V1\RatingsController::class, 'index']);
+    Route::post('/ratings', [RatingsController::class, 'store'])->middleware('simple.auth');
+    Route::get('/bonuses', [BonusesController::class, 'index']);
 
     // Notifications
-    Route::get('/notifications', [NotificationsController::class, 'index'])->middleware('auth:api');
-    Route::post('/notifications/{id}/read', [NotificationsController::class, 'read'])->middleware('auth:api');
+    Route::get('/notifications', [NotificationsController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationsController::class, 'read'])->middleware('simple.auth');
+
+    // Weather
+    Route::get('/weather', [App\Http\Controllers\Api\V1\WeatherController::class, 'getWeather']);
+    Route::get('/weather/options', [App\Http\Controllers\Api\V1\WeatherController::class, 'getWeatherOptions']);
+    
+    // Weather Points
+    Route::get('/weather/points', [WeatherPointController::class, 'index'])->middleware('simple.auth');
+    Route::post('/weather/points', [WeatherPointController::class, 'store'])->middleware('simple.auth');
+    Route::put('/weather/points/{id}', [WeatherPointController::class, 'update'])->middleware('simple.auth');
+    Route::delete('/weather/points/{id}', [WeatherPointController::class, 'destroy'])->middleware('simple.auth');
+
+    // Privacy Settings
+    Route::get('/privacy/settings', [PrivacySettingsController::class, 'index'])->middleware('simple.auth');
+    Route::put('/privacy/settings', [PrivacySettingsController::class, 'update'])->middleware('simple.auth');
+
+    // Tracks
+    Route::get('/tracks', [TrackController::class, 'index']);
+    Route::post('/tracks', [TrackController::class, 'store']);
+    Route::get('/tracks/{id}', [TrackController::class, 'show']);
+    Route::put('/tracks/{id}', [TrackController::class, 'update']);
+    Route::post('/tracks/{id}/catch', [TrackController::class, 'addCatch']);
 
   // Banners
   Route::get('/banners', [BannersController::class, 'index']);
@@ -213,7 +262,6 @@ Route::prefix('v1')->group(function () {
 
   // Push notification routes
   Route::middleware('auth:api')->group(function () {
-    Route::get('/notifications', [PushNotificationController::class, 'index']);
     Route::post('/notifications/register-token', [PushNotificationController::class, 'registerToken']);
     Route::post('/notifications/unregister-token', [PushNotificationController::class, 'unregisterToken']);
   });
@@ -224,8 +272,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/unfollow', [FollowController::class, 'unfollow']);
     Route::post('/follow/toggle', [FollowController::class, 'toggle']);
     Route::get('/follow/suggestions', [FollowController::class, 'suggestions']);
-    Route::get('/users/{user}/followers', [FollowController::class, 'followers']);
-    Route::get('/users/{user}/following', [FollowController::class, 'following']);
+    // Removed duplicate routes - handled by UserController
     Route::get('/users/{user}/is-following', [FollowController::class, 'isFollowing']);
     Route::get('/users/{user}/mutual', [FollowController::class, 'mutual']);
   });
@@ -266,9 +313,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/watch/biometric-stats', [WatchController::class, 'getUserBiometricStats']);
 
     // Events API (authenticated users)
-    Route::get('/events', [EventController::class, 'index']);
     Route::get('/events/nearby', [EventController::class, 'nearby']);
-    Route::get('/events/{id}', [EventController::class, 'show']);
     Route::post('/events', [EventController::class, 'store']);
     Route::put('/events/{id}', [EventController::class, 'update']);
     Route::delete('/events/{id}', [EventController::class, 'destroy']);
@@ -294,9 +339,17 @@ Route::prefix('v1')->group(function () {
   });
 });
 
+// OAuth routes without API prefix (for external redirects)
+Route::get('/auth/{provider}/redirect', [OAuthController::class, 'redirect']);
+Route::get('/auth/{provider}/callback', [OAuthController::class, 'callback']);
+
 // Webhook routes (no authentication required)
 Route::post('/webhook/github', [WebhookController::class, 'github']);
 Route::get('/health', [WebhookController::class, 'health']);
+
+// Test routes
+Route::get('/test', [TestController::class, 'test']);
+Route::get('/test/health', [TestController::class, 'health']);
 
 // Admin routes
 Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
@@ -329,6 +382,16 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
   Route::get('/events/{eventId}/news/pending', [EventNewsController::class, 'adminPending']);
   Route::post('/events/{eventId}/news/{newsId}/approve', [EventNewsController::class, 'adminApprove']);
   Route::post('/events/{eventId}/news/{newsId}/reject', [EventNewsController::class, 'adminReject']);
+});
+
+// AI Service routes
+Route::prefix('ai')->group(function () {
+    Route::post('/analyze', [AIController::class, 'analyzeImage']);
+    Route::post('/moderate', [AIController::class, 'moderateContent']);
+    Route::post('/alt-text', [AIController::class, 'generateAltText']);
+    Route::post('/detect-species', [AIController::class, 'detectFishSpecies']);
+    Route::get('/health', [AIController::class, 'health']);
+    Route::get('/config', [AIController::class, 'config']);
 });
 
 // Telegram routes

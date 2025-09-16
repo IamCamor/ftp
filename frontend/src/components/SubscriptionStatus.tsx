@@ -44,7 +44,9 @@ const SubscriptionStatusComponent: React.FC<SubscriptionStatusProps> = ({
   }
 
   const getStatusText = () => {
-    if (status.is_premium) {
+    if (status.is_guide) {
+      return 'Гид';
+    } else if (status.is_premium) {
       return 'Premium';
     } else if (status.is_pro) {
       return 'Pro';
@@ -54,7 +56,9 @@ const SubscriptionStatusComponent: React.FC<SubscriptionStatusProps> = ({
   };
 
   const getStatusClass = () => {
-    if (status.is_premium) {
+    if (status.is_guide) {
+      return 'guide';
+    } else if (status.is_premium) {
       return 'premium';
     } else if (status.is_pro) {
       return 'pro';
@@ -72,6 +76,13 @@ const SubscriptionStatusComponent: React.FC<SubscriptionStatusProps> = ({
   return (
     <div className={`subscription-status ${getStatusClass()} ${className}`}>
       <div className="status-badge">
+        {status.is_guide && status.guide_icon_url && (
+          <img 
+            src={status.guide_icon_url} 
+            alt="Guide" 
+            className="guide-icon" 
+          />
+        )}
         {status.is_premium && status.crown_icon_url && (
           <img 
             src={status.crown_icon_url} 
@@ -85,7 +96,8 @@ const SubscriptionStatusComponent: React.FC<SubscriptionStatusProps> = ({
       {activeSubscription && (
         <div className="subscription-details">
           <div className="subscription-type">
-            {activeSubscription.type === 'premium' ? 'Premium' : 'Pro'}
+            {activeSubscription.type === 'guide' ? 'Гид' : 
+             activeSubscription.type === 'premium' ? 'Premium' : 'Pro'}
           </div>
           <div className="subscription-expires">
             {activeSubscription.expires_at && (

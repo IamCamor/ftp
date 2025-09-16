@@ -9,17 +9,19 @@ class OAuthIdentity extends Model
 {
     use HasFactory;
 
+    protected $table = 'oauth_identities';
+
     protected $fillable = [
         'user_id',
         'provider',
         'provider_user_id',
         'access_token',
         'refresh_token',
-        'token_expires_at',
+        'expires_at',
     ];
 
     protected $casts = [
-        'token_expires_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function user()
@@ -27,4 +29,3 @@ class OAuthIdentity extends Model
         return $this->belongsTo(User::class);
     }
 }
-

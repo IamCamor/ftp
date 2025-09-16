@@ -155,6 +155,7 @@ class DetectLanguage
         foreach ($parts as $part) {
             $part = trim($part);
             $quality = 1.0;
+            $lang = $part; // Default to the full part
 
             // Check for quality value
             if (str_contains($part, ';q=')) {

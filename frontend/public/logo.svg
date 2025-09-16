@@ -1,0 +1,9 @@
+<svg width="200" height="50" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- White background -->
+  <rect width="200" height="50" fill="white"/>
+  
+  <!-- FishTrackPro text in graffiti/handwritten style -->
+  <text x="10" y="35" font-family="'Comic Sans MS', 'Marker Felt', 'Bradley Hand', cursive" font-size="20" font-weight="900" fill="black" text-anchor="start" style="font-style: italic; letter-spacing: -0.5px; text-shadow: 1px 1px 0px rgba(0,0,0,0.3);">
+    FishTrackPro
+  </text>
+</svg>

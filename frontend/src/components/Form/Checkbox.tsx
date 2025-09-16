@@ -38,7 +38,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
         />
         
         <div className="checkbox-custom">
-          {checked && <Icon name="check" size={16} />}
+          {checked && <Icon name="check" size="sm" />}
         </div>
         
         <div className="checkbox-text">

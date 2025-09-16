@@ -1,0 +1,21 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#FF6B35" stroke="#E55A2B" stroke-width="20"/>
+  
+  <!-- Fish icon -->
+  <path d="M128 192 C128 128, 192 96, 256 128 C320 96, 384 128, 384 192 C384 256, 320 288, 256 256 C192 288, 128 256, 128 192 Z" fill="white"/>
+  
+  <!-- Fish eye -->
+  <circle cx="288" cy="192" r="32" fill="#FF6B35"/>
+  
+  <!-- Fish tail -->
+  <path d="M128 192 L64 160 L64 224 Z" fill="white"/>
+  
+  <!-- Water waves -->
+  <path d="M96 320 Q128 288, 160 320 Q192 352, 224 320 Q256 288, 288 320 Q320 352, 352 320 Q384 288, 416 320" stroke="white" stroke-width="24" fill="none"/>
+  
+  <!-- FishTrackPro text -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="64" font-weight="bold" fill="white" text-anchor="middle">
+    FishTrackPro
+  </text>
+</svg>

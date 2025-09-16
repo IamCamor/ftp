@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест BottomNav</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .test-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 0;
+            transition: all 0.2s ease;
+            min-width: 50px;
+        }
+        .nav-item:hover {
+            color: #2196f3;
+            background: none;
+            transform: none;
+        }
+        .nav-item.active {
+            color: #2196f3;
+            background: none;
+        }
+        .nav-label {
+            display: none;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+        .test-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            color: #1565c0;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+</head>
+<body>
+    <div class="test-container">
+        <h2>🧪 Тест BottomNav - Кнопка добавления</h2>
+        
+        <div class="bottom-nav">
+            <button class="nav-item active">
+                <span class="material-symbols-rounded">home</span>
+                <span class="nav-label">Лента</span>
+            </button>
+            
+            <button class="nav-item">
+                <span class="material-symbols-rounded">map</span>
+                <span class="nav-label">Карта</span>
+            </button>
+            
+            <button class="nav-item">
+                <span class="material-symbols-rounded">wb_sunny</span>
+                <span class="nav-label">Погода</span>
+            </button>
+            
+            <button class="nav-item">
+                <span class="material-symbols-rounded">group</span>
+                <span class="nav-label">Группы</span>
+            </button>
+            
+            <button class="nav-item">
+                <span class="material-symbols-rounded">add</span>
+                <span class="nav-label">Добавить</span>
+            </button>
+        </div>
+        
+        <div class="test-info">
+            <h3>✅ Изменения применены:</h3>
+            <ul>
+                <li>Кнопка добавления теперь использует стандартный стиль <code>.nav-item</code></li>
+                <li>Убраны специальные стили <code>.add-button</code></li>
+                <li>Кнопка выглядит как обычная иконка навигации</li>
+                <li>Используется иконка <code>add</code> из Material Symbols</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+

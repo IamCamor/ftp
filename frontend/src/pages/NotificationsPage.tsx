@@ -1,137 +1,174 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../components/Icon';
-import { notificationsList, notificationRead } from '../api';
-import type { AppNotification } from '../types';
+import { useNotifications, type Notification } from '../hooks/useNotifications';
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 const NotificationsPage: React.FC = () => {
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { notifications, markAsRead, markAllAsRead, removeNotification } = useNotifications();
 
-  useEffect(() => {
-    loadNotifications();
-  }, []);
-
-  const loadNotifications = async () => {
-    try {
-      setLoading(true);
-      const data = await notificationsList();
-      setNotifications(data);
-    } catch (err) {
-      setError('Не удалось загрузить уведомления');
-      console.error('Notifications loading error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMarkAsRead = async (id: number) => {
-    try {
-      await notificationRead(id);
-      setNotifications(prev => prev.map(n => 
-        n.id === id ? { ...n, is_read: true, read_at: new Date().toISOString() } : n
-      ));
-    } catch (err) {
-      console.error('Failed to mark notification as read:', err);
-    }
-  };
-
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'new_like':
-        return 'favorite';
-      case 'new_comment':
-        return 'comment';
-      case 'catch_added':
-        return 'add_circle';
-      case 'point_added':
-        return 'place';
-      case 'system':
-        return 'info';
+      case 'success':
+        return 'check_circle';
+      case 'warning':
+        return 'warning';
+      case 'error':
+        return 'error';
       default:
-        return 'notifications';
+        return 'info';
     }
   };
 
-  if (loading) {
-    return (
-      <div className="screen">
-        <div className="loading">Загрузка уведомлений...</div>
-      </div>
-    );
-  }
+  const getNotificationColor = (type: Notification['type']) => {
+    switch (type) {
+      case 'success':
+        return 'var(--success-color, #10b981)';
+      case 'warning':
+        return 'var(--warning-color, #f59e0b)';
+      case 'error':
+        return 'var(--error-color, #ef4444)';
+      default:
+        return 'var(--info-color, #3b82f6)';
+    }
+  };
 
-  if (error) {
-    return (
-      <div className="screen">
-        <div className="error">
-          <p>{error}</p>
-          <button onClick={loadNotifications} className="btn btn-primary">
-            Попробовать снова
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+    
+    if (notification.actionUrl) {
+      navigate(notification.actionUrl);
+    }
+  };
 
-  if (notifications.length === 0) {
-    return (
-      <div className="screen">
-        <div className="empty-state">
-          <Icon name="notifications_off" size={64} />
-          <h3>Нет уведомлений</h3>
-          <p>Здесь будут появляться новые уведомления</p>
-        </div>
-      </div>
-    );
-  }
+  const unreadNotifications = notifications.filter(n => !n.read);
+  const readNotifications = notifications.filter(n => n.read);
 
   return (
-    <div className="screen">
-      <div className="notifications-header">
-        <h2>Уведомления</h2>
-        <button 
-          className="mark-all-read"
-          onClick={() => {
-            notifications.forEach(n => {
-              if (!n.is_read) {
-                handleMarkAsRead(n.id);
-              }
-            });
-          }}
-        >
-          Отметить все как прочитанные
+    <div className="notifications-page">
+      <div className="page-header">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <Icon name="arrow_back" size="md" />
         </button>
+        <h1>Уведомления</h1>
+        {unreadNotifications.length > 0 && (
+          <button
+            className="mark-all-read-button"
+            onClick={markAllAsRead}
+            title="Отметить все как прочитанные"
+          >
+            <Icon name="done_all" size="sm" />
+          </button>
+        )}
       </div>
 
-      <div className="notifications-list">
-        {notifications.map((notification) => (
-          <div 
-            key={notification.id} 
-            className={`notification-item ${notification.is_read ? 'read' : 'unread'}`}
-            onClick={() => !notification.is_read && handleMarkAsRead(notification.id)}
-          >
-            <div className="notification-icon">
-              <Icon name={getNotificationIcon(notification.type)} size={24} />
-            </div>
-            
-            <div className="notification-content">
-              <h4>{notification.title}</h4>
-              {notification.body && <p>{notification.body}</p>}
-              <span className="notification-time">
-                {new Date(notification.created_at).toLocaleString()}
-              </span>
-            </div>
-
-            {!notification.is_read && (
-              <div className="unread-indicator"></div>
-            )}
+      <div className="notifications-content">
+        {notifications.length === 0 ? (
+          <div className="notifications-empty">
+            <Icon name="notifications_off" size="xl" />
+            <h3>Нет уведомлений</h3>
+            <p>Здесь будут появляться важные уведомления</p>
           </div>
-        ))}
+        ) : (
+          <>
+            {unreadNotifications.length > 0 && (
+              <div className="notifications-section">
+                <h2 className="section-title">Новые ({unreadNotifications.length})</h2>
+                <div className="notifications-list">
+                  {unreadNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`notification-item unread`}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      <div className="notification-icon">
+                        <Icon 
+                          name={getNotificationIcon(notification.type)} 
+                          size="md"
+                          style={{ color: getNotificationColor(notification.type) }}
+                        />
+                      </div>
+                      <div className="notification-content">
+                        <div className="notification-header">
+                          <h4 className="notification-title">{notification.title}</h4>
+                          <span className="notification-time">
+                            {formatDistanceToNow(notification.timestamp, { 
+                              addSuffix: true, 
+                              locale: ru 
+                            })}
+                          </span>
+                        </div>
+                        <p className="notification-message">{notification.message}</p>
+                      </div>
+                      <button
+                        className="notification-remove"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeNotification(notification.id);
+                        }}
+                        title="Удалить уведомление"
+                      >
+                        <Icon name="close" size="sm" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {readNotifications.length > 0 && (
+              <div className="notifications-section">
+                <h2 className="section-title">Прочитанные</h2>
+                <div className="notifications-list">
+                  {readNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className="notification-item read"
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      <div className="notification-icon">
+                        <Icon 
+                          name={getNotificationIcon(notification.type)} 
+                          size="md"
+                          style={{ color: getNotificationColor(notification.type) }}
+                        />
+                      </div>
+                      <div className="notification-content">
+                        <div className="notification-header">
+                          <h4 className="notification-title">{notification.title}</h4>
+                          <span className="notification-time">
+                            {formatDistanceToNow(notification.timestamp, { 
+                              addSuffix: true, 
+                              locale: ru 
+                            })}
+                          </span>
+                        </div>
+                        <p className="notification-message">{notification.message}</p>
+                      </div>
+                      <button
+                        className="notification-remove"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeNotification(notification.id);
+                        }}
+                        title="Удалить уведомление"
+                      >
+                        <Icon name="close" size="sm" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
 };
 
 export default NotificationsPage;
-

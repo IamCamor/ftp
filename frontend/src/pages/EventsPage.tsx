@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
+import ScreenLayout from '../components/ScreenLayout';
 import { events } from '../api';
 import type { AppEvent } from '../types';
 
@@ -46,33 +47,19 @@ const EventsPage: React.FC = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="screen">
-        <div className="loading">Загрузка мероприятий...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="screen">
-        <div className="error">
-          <p>{error}</p>
-          <button onClick={loadEvents} className="btn btn-primary">
-            Попробовать снова
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="screen">
+    <ScreenLayout
+      title="Мероприятия"
+      description="Рыболовные мероприятия, соревнования и встречи рыбаков"
+      keywords={['мероприятия', 'соревнования', 'встречи', 'рыбалка']}
+      loading={loading}
+      error={error}
+      onRetry={loadEvents}
+    >
       <div className="events-header">
         <h2>Мероприятия</h2>
         <button className="btn btn-primary" onClick={handleCreateEvent}>
-          <Icon name="add" size={20} />
+          <Icon name="add" size="md" />
           Создать мероприятие
         </button>
       </div>
@@ -94,7 +81,7 @@ const EventsPage: React.FC = () => {
               <div className="event-header">
                 <h3>{event.title}</h3>
                 <div className="event-status">
-                  <Icon name="schedule" size={16} />
+                  <Icon name="schedule" size="sm" />
                   <span>{formatDate(event.start_at)}</span>
                 </div>
               </div>
@@ -105,19 +92,19 @@ const EventsPage: React.FC = () => {
 
               <div className="event-meta">
                 <div className="event-organizer">
-                  <Avatar src={event.organizer?.photo_url} size={24} />
+                  <Avatar src={event.organizer?.photo_url} size="md" name={event.organizer?.name} />
                   <span>Организатор: {event.organizer?.name}</span>
                 </div>
                 
                 {event.location_name && (
                   <div className="event-location">
-                    <Icon name="location_on" size={16} />
+                    <Icon name="location_on" size="sm" />
                     <span>{event.location_name}</span>
                   </div>
                 )}
 
                 <div className="event-stats">
-                  <Icon name="group" size={16} />
+                  <Icon name="group" size="sm" />
                   <span>{event.participants_count} участников</span>
                   {event.max_participants && (
                     <span> / {event.max_participants}</span>
@@ -128,7 +115,7 @@ const EventsPage: React.FC = () => {
           </div>
         ))}
       </div>
-    </div>
+    </ScreenLayout>
   );
 };
 

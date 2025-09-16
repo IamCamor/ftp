@@ -65,7 +65,7 @@ return [
         ],
         'catch' => [
             'enabled' => true,
-            'template' => "🎣 *New Catch Recorded*\n\n" .
+            'template' => "🎣 <b>New Catch Recorded</b>\n\n" .
                          "User: {user_name} (@{username})\n" .
                          "Fish: {fish_type}\n" .
                          "Weight: {weight} kg\n" .

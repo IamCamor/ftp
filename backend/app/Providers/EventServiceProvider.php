@@ -79,7 +79,18 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Регистрируем события для Yandex OAuth
+        $socialiteWasCalled = 'Laravel\Socialite\Contracts\Factory';
+        $this->app->make($socialiteWasCalled)->extend(
+            'yandex',
+            function ($app) use ($socialiteWasCalled) {
+                $config = $app['config']['services.yandex'];
+                return $app->make($socialiteWasCalled)->buildProvider(
+                    \SocialiteProviders\Yandex\Provider::class,
+                    $config
+                );
+            }
+        );
     }
 
     /**
