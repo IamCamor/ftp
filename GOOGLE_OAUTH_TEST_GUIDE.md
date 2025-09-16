@@ -4,8 +4,8 @@
 
 **Google OAuth настроен и готов к тестированию!**
 
-- ✅ CLIENT_ID: `834068999091-ab2p29q5oo5a1m7bfk6tgm40nv6h97qr.apps.googleusercontent.com`
-- ✅ CLIENT_SECRET: `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`
+- ✅ CLIENT_ID: `[НАСТРОЕН]`
+- ✅ CLIENT_SECRET: `[НАСТРОЕН]`
 - ✅ REDIRECT_URI: `https://api.fishtrackpro.ru/auth/google/callback`
 - ✅ Таблица `oauth_identities` создана
 - ✅ OAuthController обновлен
