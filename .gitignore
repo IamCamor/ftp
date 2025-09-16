@@ -79,3 +79,4 @@ composer.lock
 # Temporary files
 *.tmp
 *.temp
+mcp-playwright/
