@@ -65,6 +65,12 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return <div>Проверка прав доступа...</div>;
   }
   
+  // Если пользователь не авторизован, перенаправляем на логин
+  if (!isAuthed()) {
+    return <Navigate to={config.routes.auth.login} />;
+  }
+  
+  // Если пользователь авторизован, но не админ, перенаправляем на главную
   return isAdmin ? <>{children}</> : <Navigate to="/" />;
 };
 
@@ -285,6 +291,30 @@ const AppContent: React.FC = () => {
               element={
                 <AdminRoute>
                   <UserManagement />
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/q/admin/catches" 
+              element={
+                <AdminRoute>
+                  <div>Управление уловами (в разработке)</div>
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/q/admin/points" 
+              element={
+                <AdminRoute>
+                  <div>Управление точками (в разработке)</div>
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/q/admin/reports" 
+              element={
+                <AdminRoute>
+                  <div>Управление жалобами (в разработке)</div>
                 </AdminRoute>
               } 
             />
